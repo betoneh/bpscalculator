@@ -48,7 +48,6 @@
   .header h1 { font-size: 16px; font-weight: 600; letter-spacing: -0.3px; }
   .header .sub { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; }
 
-  /* Direction toggle */
   .direction-wrap {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -77,27 +76,12 @@
   }
   .dir-btn .dir-main { font-size: 13px; font-weight: 600; letter-spacing: 0.2px; }
   .dir-btn .dir-sub { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.6px; }
-
-  /* MXN = verde bandera de México (#006847), USD = azul bandera USA (#0A3161) */
-  .dir-btn[data-dir="sell"].active {
-    /* Cliente vende USD, recibe MXN -> verde MX */
-    background: #006847;
-    color: #fff;
-    border-color: #006847;
-  }
+  .dir-btn[data-dir="sell"].active { background: #006847; color: #fff; border-color: #006847; }
   .dir-btn[data-dir="sell"].active .dir-sub { color: #fff; opacity: 0.75; }
-
-  .dir-btn[data-dir="buy"].active {
-    /* Cliente compra USD -> azul USA */
-    background: #0A3161;
-    color: #fff;
-    border-color: #0A3161;
-  }
+  .dir-btn[data-dir="buy"].active { background: #0A3161; color: #fff; border-color: #0A3161; }
   .dir-btn[data-dir="buy"].active .dir-sub { color: #fff; opacity: 0.75; }
-
   .dir-btn:active:not(.active) { background: var(--surface-2); }
 
-  /* FX rate card - compacto, una sola linea */
   .fx-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -108,14 +92,7 @@
     align-items: center;
     gap: 10px;
   }
-  .fx-main {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
+  .fx-main { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
   .fx-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.6px; white-space: nowrap; }
   .fx-rate { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; font-variant-numeric: tabular-nums; line-height: 1; }
   .fx-rate .unit { font-size: 11px; color: var(--text-mute); font-weight: 400; margin-left: 3px; }
@@ -148,21 +125,14 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .banxico {
-    font-size: 10px;
-    color: var(--text-dim);
-    padding: 6px 12px;
-    margin-top: -10px;
-    margin-bottom: 10px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-top: none;
+    font-size: 10px; color: var(--text-dim); padding: 6px 12px;
+    margin-top: -10px; margin-bottom: 10px;
+    background: var(--surface); border: 1px solid var(--border); border-top: none;
     border-radius: 0 0 var(--radius) var(--radius);
-    display: flex;
-    justify-content: space-between;
+    display: flex; justify-content: space-between;
   }
   .banxico b { color: var(--text-mute); font-weight: 500; }
 
-  /* Section */
   .section {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -171,154 +141,61 @@
     margin-bottom: 8px;
   }
   .section-title {
-    font-size: 10px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    margin-bottom: 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    font-size: 10px; color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 0.6px; margin-bottom: 6px;
+    display: flex; justify-content: space-between; align-items: center;
   }
   .section-title .hint { color: var(--text-dim); text-transform: none; letter-spacing: 0; font-size: 10px; }
 
-  .input-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    align-items: end;
-  }
-  .input-group label {
-    display: block;
-    font-size: 10px;
-    color: var(--text-mute);
-    margin-bottom: 3px;
-  }
+  .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: end; }
+  .input-group label { display: block; font-size: 10px; color: var(--text-mute); margin-bottom: 3px; }
   .input-group input {
-    width: 100%;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 9px 10px;
-    border-radius: 7px;
-    font-size: 15px;
-    font-family: inherit;
-    font-variant-numeric: tabular-nums;
-    transition: border-color 0.15s;
-    -webkit-appearance: none;
-    appearance: none;
+    width: 100%; background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--text); padding: 9px 10px; border-radius: 7px; font-size: 15px;
+    font-family: inherit; font-variant-numeric: tabular-nums;
+    transition: border-color 0.15s; -webkit-appearance: none; appearance: none;
   }
-  .input-group input:focus {
-    outline: none;
-    border-color: var(--accent);
-  }
-  .input-group input.highlight {
-    border-color: var(--accent);
-    background: rgba(212, 175, 55, 0.05);
-  }
+  .input-group input:focus { outline: none; border-color: var(--accent); }
+  .input-group input.highlight { border-color: var(--accent); background: rgba(212, 175, 55, 0.05); }
 
-  .equiv {
-    text-align: center;
-    font-size: 10px;
-    color: var(--text-dim);
-    margin: 4px 0 0;
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* Total */
-  .total-card {
-    background: var(--surface-2);
-    border: 1px solid var(--accent-dim);
-    border-radius: var(--radius);
-    padding: 10px 12px;
-    margin-bottom: 10px;
-  }
-  .total-label { font-size: 10px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
-  .total-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .total-item .val { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.3px; line-height: 1.1; }
-  .total-item .cap { font-size: 10px; color: var(--text-mute); margin-top: 1px; }
-
-  /* Output card - vista cliente */
+  /* Output card */
   .output {
-    background: var(--surface);
-    border: 1px solid var(--accent-dim);
-    border-radius: var(--radius);
-    padding: 12px 14px;
-    margin-bottom: 8px;
-    position: relative;
-  }
-  .output::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
-    background: var(--accent);
-    border-radius: var(--radius) 0 0 var(--radius);
+    background: var(--surface); border: 1px solid var(--accent-dim);
+    border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px;
+    position: relative; border-left: 3px solid var(--accent);
   }
   .output-title {
-    font-size: 10px;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 8px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    font-size: 10px; color: var(--accent); text-transform: uppercase;
+    letter-spacing: 0.8px; margin-bottom: 8px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
   }
   .output-title .tag {
-    background: var(--accent);
-    color: #000;
-    padding: 1px 5px;
-    border-radius: 3px;
-    font-size: 9px;
-    letter-spacing: 0.5px;
+    background: var(--accent); color: #000; padding: 1px 5px;
+    border-radius: 3px; font-size: 9px; letter-spacing: 0.5px;
   }
 
   /* Internal view */
   .internal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 12px 14px;
-    margin-bottom: 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px;
   }
   .internal-title {
-    font-size: 10px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 8px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    font-size: 10px; color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 0.8px; margin-bottom: 10px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
   }
   .internal-title .tag {
-    background: var(--border-strong);
-    color: var(--text-mute);
-    padding: 1px 5px;
-    border-radius: 3px;
-    font-size: 9px;
-    letter-spacing: 0.5px;
+    background: var(--border-strong); color: var(--text-mute);
+    padding: 1px 5px; border-radius: 3px; font-size: 9px; letter-spacing: 0.5px;
   }
   .internal-toggle {
-    background: transparent;
-    border: none;
-    color: var(--text-dim);
-    cursor: pointer;
-    margin-left: auto;
-    font-size: 10px;
-    font-family: inherit;
-    padding: 2px 6px;
+    background: transparent; border: none; color: var(--text-dim);
+    cursor: pointer; margin-left: auto; font-size: 10px; font-family: inherit; padding: 2px 6px;
   }
+
   .output-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 5px 0;
-    border-bottom: 1px solid var(--border);
-    font-variant-numeric: tabular-nums;
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 5px 0; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums;
   }
   .output-row:last-child { border-bottom: none; }
   .output-row .k { font-size: 12px; color: var(--text-mute); }
@@ -327,83 +204,75 @@
   .output-row.hero .k { font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.6px; }
   .output-row.hero .v { font-size: 20px; font-weight: 600; color: var(--accent); }
 
-  .pnl-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    margin-top: 8px;
+  /* Metric boxes grid */
+  .metric-grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; }
+  .metric-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; }
+  .metric-box {
+    background: var(--surface-2); border-radius: 6px; padding: 6px 4px; text-align: center;
   }
-  .pnl-item {
-    background: var(--surface-2);
-    border-radius: 6px;
-    padding: 7px 8px;
-    text-align: center;
+  .metric-box .lbl {
+    font-size: 8px; color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 0.4px; margin-bottom: 2px; line-height: 1.2;
   }
-  .pnl-item .lbl { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
-  .pnl-item .val { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
-  .pnl-item.pos .val { color: var(--green); }
-  .pnl-item.neg .val { color: var(--red); }
+  .metric-box .val {
+    font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text);
+  }
 
-  .actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 10px;
+  /* Layer headers */
+  .layer-header {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 6px; font-weight: 600; display: flex; align-items: center; gap: 5px;
   }
+  .layer-dot {
+    width: 6px; height: 6px; border-radius: 50%; display: inline-block;
+  }
+  .layer-divider { height: 1px; background: var(--border); margin: 12px 0; }
+
+  /* Highlight boxes */
+  .highlight-box {
+    border-radius: 6px; padding: 8px 10px; margin-top: 6px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .highlight-box .lbl {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;
+  }
+  .highlight-box .val {
+    font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums;
+  }
+  .highlight-box.red {
+    background: rgba(248, 113, 113, 0.08); border: 1px solid rgba(248, 113, 113, 0.25);
+  }
+  .highlight-box.red .lbl, .highlight-box.red .val { color: var(--red); }
+  .highlight-box.green {
+    background: rgba(74, 222, 128, 0.08); border: 1px solid rgba(74, 222, 128, 0.25);
+  }
+  .highlight-box.green .lbl, .highlight-box.green .val { color: var(--green); }
+
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
   .btn {
-    background: var(--surface);
-    border: 1px solid var(--border-strong);
-    color: var(--text);
-    padding: 10px;
-    border-radius: 7px;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.15s;
+    background: var(--surface); border: 1px solid var(--border-strong);
+    color: var(--text); padding: 10px; border-radius: 7px; font-size: 12px;
+    font-weight: 500; cursor: pointer; font-family: inherit; transition: all 0.15s;
   }
   .btn:active { transform: scale(0.98); background: var(--surface-2); }
   .btn.primary { background: var(--accent); color: #000; border-color: var(--accent); }
-  .btn.stale {
-    background: rgba(248, 113, 113, 0.1);
-    border-color: var(--red);
-    color: var(--red);
-  }
+  .btn.stale { background: rgba(248, 113, 113, 0.1); border-color: var(--red); color: var(--red); }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  /* History */
-  .history {
-    margin-top: 12px;
-  }
+  .history { margin-top: 12px; }
   .history-title {
-    font-size: 11px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 8px;
-    display: flex;
-    justify-content: space-between;
+    font-size: 11px; color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 0.8px; margin-bottom: 8px; display: flex; justify-content: space-between;
   }
   .history-clear {
-    background: transparent;
-    border: none;
-    color: var(--text-dim);
-    font-size: 10px;
-    cursor: pointer;
-    font-family: inherit;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    background: transparent; border: none; color: var(--text-dim);
+    font-size: 10px; cursor: pointer; font-family: inherit;
+    text-transform: uppercase; letter-spacing: 0.5px;
   }
   .hist-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin-bottom: 6px;
-    font-size: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; font-size: 12px;
+    display: flex; justify-content: space-between; align-items: center;
     font-variant-numeric: tabular-nums;
   }
   .hist-item .left { display: flex; flex-direction: column; gap: 2px; }
@@ -414,117 +283,42 @@
   .hist-item .time { color: var(--text-dim); font-size: 10px; margin-top: 2px; }
 
   .toast {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
+    position: fixed; bottom: 20px; left: 50%;
     transform: translateX(-50%) translateY(100px);
-    background: var(--text);
-    color: var(--bg);
-    padding: 10px 20px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 500;
-    opacity: 0;
-    transition: all 0.3s ease;
-    z-index: 100;
-    pointer-events: none;
+    background: var(--text); color: var(--bg); padding: 10px 20px;
+    border-radius: 20px; font-size: 13px; font-weight: 500;
+    opacity: 0; transition: all 0.3s ease; z-index: 100; pointer-events: none;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  .error { color: var(--red); font-size: 11px; margin-top: 4px; }
 
   input[type="number"] { -moz-appearance: textfield; }
   input[type="number"]::-webkit-outer-spin-button,
   input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-  /* Login gate */
   .gate {
-    position: fixed;
-    inset: 0;
-    background: var(--bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    z-index: 1000;
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; z-index: 1000;
   }
-  .gate-box {
-    width: 100%;
-    max-width: 360px;
-    text-align: center;
-  }
-  .gate-brand {
-    font-size: 11px;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 8px;
-    font-weight: 600;
-  }
-  .gate-title {
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: -0.3px;
-    margin-bottom: 6px;
-  }
-  .gate-sub {
-    font-size: 13px;
-    color: var(--text-mute);
-    margin-bottom: 28px;
-  }
+  .gate-box { width: 100%; max-width: 360px; text-align: center; }
+  .gate-brand { font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; font-weight: 600; }
+  .gate-title { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; margin-bottom: 6px; }
+  .gate-sub { font-size: 13px; color: var(--text-mute); margin-bottom: 28px; }
   .gate-input {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 14px 16px;
-    border-radius: 8px;
-    font-size: 16px;
-    font-family: inherit;
-    letter-spacing: 2px;
-    text-align: center;
-    margin-bottom: 10px;
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); padding: 14px 16px; border-radius: 8px; font-size: 16px;
+    font-family: inherit; letter-spacing: 2px; text-align: center; margin-bottom: 10px;
   }
-  .gate-input:focus {
-    outline: none;
-    border-color: var(--accent);
-  }
-  .gate-input.err {
-    border-color: var(--red);
-    animation: shake 0.3s;
-  }
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-6px); }
-    75% { transform: translateX(6px); }
-  }
+  .gate-input:focus { outline: none; border-color: var(--accent); }
+  .gate-input.err { border-color: var(--red); animation: shake 0.3s; }
+  @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
   .gate-btn {
-    width: 100%;
-    background: var(--accent);
-    border: none;
-    color: #000;
-    padding: 14px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    letter-spacing: 0.3px;
+    width: 100%; background: var(--accent); border: none; color: #000;
+    padding: 14px; border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: inherit; letter-spacing: 0.3px;
   }
   .gate-btn:active { transform: scale(0.98); }
-  .gate-err-msg {
-    color: var(--red);
-    font-size: 12px;
-    margin-top: 10px;
-    min-height: 16px;
-  }
-  .gate-foot {
-    font-size: 10px;
-    color: var(--text-dim);
-    margin-top: 24px;
-    letter-spacing: 0.5px;
-  }
-  .gate-foot .week { color: var(--text-mute); }
+  .gate-err-msg { color: var(--red); font-size: 12px; margin-top: 10px; min-height: 16px; }
   .app-hidden { display: none !important; }
 </style>
 </head>
@@ -542,7 +336,7 @@
   </div>
 </div>
 
-<!-- App (oculta hasta que pase el gate) -->
+<!-- App -->
 <div id="app" class="app-hidden">
 
 <div class="header">
@@ -641,22 +435,7 @@
   </div>
 </div>
 
-<!-- Total BPS -->
-<div class="total-card">
-  <div class="total-label">Total spread</div>
-  <div class="total-grid">
-    <div class="total-item">
-      <div class="val" id="totalBps">0</div>
-      <div class="cap">BPS totales</div>
-    </div>
-    <div class="total-item">
-      <div class="val" id="totalCent">0.00</div>
-      <div class="cap">centavos MXN</div>
-    </div>
-  </div>
-</div>
-
-<!-- Output - Vista cliente -->
+<!-- ═══ VISTA CLIENTE ═══ -->
 <div class="output" id="output">
   <div class="output-title">
     Para el cliente <span class="tag">Enviar</span>
@@ -673,50 +452,67 @@
     <span class="k" id="clientGetLbl">Monto que recibe el cliente</span>
     <span class="v" id="clientGet">—</span>
   </div>
-
   <div class="actions">
     <button class="btn" id="copyBtn">Copiar para cliente</button>
     <button class="btn primary" id="saveBtn">Guardar</button>
   </div>
 </div>
 
-<!-- Vista interna -->
+<!-- ═══ DESGLOSE INTERNO — 3 capas ═══ -->
 <div class="internal" id="internal">
   <div class="internal-title">
-    Interno <span class="tag">No enviar</span>
+    Desglose interno <span class="tag">No enviar</span>
     <button class="internal-toggle" id="intToggle">ocultar</button>
   </div>
   <div id="internalBody">
-    <div class="output-row">
-      <span class="k">Tipo XE (mid)</span>
-      <span class="v" id="outMid">—</span>
+
+    <!-- CAPA 1: Resumen -->
+    <div class="layer-header" style="color: var(--accent);">Resumen de la operación</div>
+    <div class="metric-grid-4" id="summaryGrid">
+      <div class="metric-box"><div class="lbl">XE Mid</div><div class="val" id="intMid">—</div></div>
+      <div class="metric-box"><div class="lbl">TC Cliente</div><div class="val" id="intTcCliente">—</div></div>
+      <div class="metric-box"><div class="lbl">BPS Total</div><div class="val" id="intBpsTotal">—</div></div>
+      <div class="metric-box"><div class="lbl">Ctvs Total</div><div class="val" id="intCtvTotal">—</div></div>
     </div>
-    <div class="output-row">
-      <span class="k">Tipo proveedor</span>
-      <span class="v" id="outProvRate">—</span>
+
+    <div class="layer-divider"></div>
+
+    <!-- CAPA 2: Proveedor (rojo) -->
+    <div class="layer-header" style="color: var(--red);">
+      <span class="layer-dot" style="background: var(--red);"></span>
+      Proveedor de liquidez
     </div>
-    <div class="output-row">
-      <span class="k">Ajuste spread</span>
-      <span class="v" id="outAdj">—</span>
+    <div class="metric-grid-3" id="provGrid">
+      <div class="metric-box"><div class="lbl">TC Proveedor</div><div class="val" id="intTcProv">—</div></div>
+      <div class="metric-box"><div class="lbl">BPS Prov.</div><div class="val" id="intBpsProv">—</div></div>
+      <div class="metric-box"><div class="lbl">Ctvs Prov.</div><div class="val" id="intCtvProv">—</div></div>
     </div>
-    <div class="output-row">
-      <span class="k">BPS totales</span>
-      <span class="v" id="outTotalBpsInt">—</span>
+    <div class="output-row" id="provFeeRow" style="display:none;">
+      <span class="k">Costo fee proveedor</span>
+      <span class="v" id="intProvFee" style="color: var(--red); font-weight: 600;">—</span>
     </div>
-    <div class="output-row">
-      <span class="k">Centavos totales</span>
-      <span class="v" id="outTotalCentInt">—</span>
+    <div class="highlight-box red" id="provTotalBox" style="display:none;">
+      <span class="lbl">Total por mandar a proveedor</span>
+      <span class="val" id="intProvTotal">—</span>
     </div>
-    <div class="pnl-grid" id="pnlGrid" style="display:none;">
-      <div class="pnl-item neg">
-        <div class="lbl">Costo spread prov.</div>
-        <div class="val" id="pnlProv">—</div>
-      </div>
-      <div class="pnl-item pos">
-        <div class="lbl">Tu margen</div>
-        <div class="val" id="pnlGain">—</div>
-      </div>
+
+    <div class="layer-divider"></div>
+
+    <!-- CAPA 3: Nuestro margen (verde) -->
+    <div class="layer-header" style="color: var(--green);">
+      <span class="layer-dot" style="background: var(--green);"></span>
+      Nuestro margen
     </div>
+    <div class="metric-grid-3" id="marginGrid">
+      <div class="metric-box"><div class="lbl">TC Cliente</div><div class="val" id="intTcClienteMargin">—</div></div>
+      <div class="metric-box"><div class="lbl">BPS Nuestro</div><div class="val" id="intBpsNuestro">—</div></div>
+      <div class="metric-box"><div class="lbl">Ctvs Nuestro</div><div class="val" id="intCtvNuestro">—</div></div>
+    </div>
+    <div class="highlight-box green" id="marginTotalBox" style="display:none;">
+      <span class="lbl">Ganancia neta</span>
+      <span class="val" id="intMarginTotal">—</span>
+    </div>
+
   </div>
 </div>
 
@@ -735,10 +531,6 @@
 <!-- /app -->
 
 <script>
-// ============================================================
-// SIMPLE PASSWORD GATE
-// Password fijo, case-insensitive. Token expira a los 7 dias.
-// ============================================================
 const PASSWORD = "oasis";
 const TOKEN_TTL_DAYS = 7;
 const TOKEN_KEY = "bps_gate_token_v2";
@@ -748,125 +540,79 @@ function checkStoredToken() {
     const raw = localStorage.getItem(TOKEN_KEY);
     if (!raw) return false;
     const { ts } = JSON.parse(raw);
-    const ageDays = (Date.now() - ts) / (1000 * 60 * 60 * 24);
-    return ageDays <= TOKEN_TTL_DAYS;
+    return (Date.now() - ts) / (1000 * 60 * 60 * 24) <= TOKEN_TTL_DAYS;
   } catch { return false; }
 }
-
-function saveToken() {
-  localStorage.setItem(TOKEN_KEY, JSON.stringify({ ts: Date.now() }));
-}
-
+function saveToken() { localStorage.setItem(TOKEN_KEY, JSON.stringify({ ts: Date.now() })); }
 function unlockApp() {
   document.getElementById('gate').style.display = 'none';
   document.getElementById('app').classList.remove('app-hidden');
   initApp();
 }
-
 function attemptGate(input) {
-  if (input.trim().toLowerCase() === PASSWORD) {
-    saveToken();
-    unlockApp();
-    return true;
-  }
+  if (input.trim().toLowerCase() === PASSWORD) { saveToken(); unlockApp(); return true; }
   return false;
 }
 
-// Auto-unlock si el token sigue valido
-if (checkStoredToken()) {
-  unlockApp();
-} else {
+if (checkStoredToken()) { unlockApp(); }
+else {
   const gateInput = document.getElementById('gateInput');
   const gateBtn = document.getElementById('gateBtn');
   const gateErr = document.getElementById('gateErr');
-
   function trySubmit() {
     const val = gateInput.value;
     if (!val) return;
-    const ok = attemptGate(val);
-    if (!ok) {
+    if (!attemptGate(val)) {
       gateInput.classList.add('err');
       gateErr.textContent = 'Contraseña incorrecta';
       gateInput.value = '';
-      setTimeout(() => {
-        gateInput.classList.remove('err');
-        gateErr.textContent = '';
-      }, 2000);
+      setTimeout(() => { gateInput.classList.remove('err'); gateErr.textContent = ''; }, 2000);
     }
   }
-
   gateBtn.addEventListener('click', trySubmit);
-  gateInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') trySubmit();
-  });
+  gateInput.addEventListener('keydown', e => { if (e.key === 'Enter') trySubmit(); });
   gateInput.focus();
 }
 
-// ============================================================
-// MAIN APP
-// ============================================================
 function initApp() {
 (function(){
   const state = {
-    direction: 'buy', // 'buy' = cliente compra USD (MXN→USD), 'sell' = cliente vende USD (USD→MXN)
-    fxMid: null,
-    fxSource: '',
-    fxTime: null,
-    banxico: null,
-    montoUsd: 0,
-    montoMxn: 0,
-    montoSource: null, // 'usd' o 'mxn' - cual input fue editado
-    bpsProv: 0,
-    bpsCli: 0,
-    history: []
+    direction: 'buy',
+    fxMid: null, fxSource: '', fxTime: null, banxico: null,
+    montoUsd: 0, montoMxn: 0, montoSource: null,
+    bpsProv: 0, bpsCli: 0, history: []
   };
 
-  // --- FX fetching ---
   async function fetchFx(){
     const btn = document.getElementById('refreshBtn');
     btn.classList.add('spinning');
     document.getElementById('fxSource').textContent = 'actualizando...';
-
     let rate = null, source = '';
 
-    // Primary: exchangerate.host (free, reliable mid-market)
     try {
       const r = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=MXN');
       const data = await r.json();
-      if (data && data.rates && data.rates.MXN) {
-        rate = data.rates.MXN;
-        source = 'exchangerate.host';
-      }
+      if (data?.rates?.MXN) { rate = data.rates.MXN; source = 'exchangerate.host'; }
     } catch(e){}
 
-    // Fallback: open.er-api.com
     if (!rate) {
       try {
         const r = await fetch('https://open.er-api.com/v6/latest/USD');
         const data = await r.json();
-        if (data && data.rates && data.rates.MXN) {
-          rate = data.rates.MXN;
-          source = 'open.er-api.com';
-        }
+        if (data?.rates?.MXN) { rate = data.rates.MXN; source = 'open.er-api.com'; }
       } catch(e){}
     }
 
-    // Fallback 2: frankfurter
     if (!rate) {
       try {
         const r = await fetch('https://api.frankfurter.app/latest?from=USD&to=MXN');
         const data = await r.json();
-        if (data && data.rates && data.rates.MXN) {
-          rate = data.rates.MXN;
-          source = 'frankfurter.app (ECB)';
-        }
+        if (data?.rates?.MXN) { rate = data.rates.MXN; source = 'frankfurter.app (ECB)'; }
       } catch(e){}
     }
 
     if (rate) {
-      state.fxMid = rate;
-      state.fxSource = source;
-      state.fxTime = new Date();
+      state.fxMid = rate; state.fxSource = source; state.fxTime = new Date();
       document.getElementById('fxRate').innerHTML = rate.toFixed(4) + '<span class="unit">MXN</span>';
       document.getElementById('fxSource').textContent = source;
       document.getElementById('fxTime').textContent = formatTime(state.fxTime);
@@ -875,34 +621,27 @@ function initApp() {
       document.getElementById('fxRate').innerHTML = '—<span class="unit">MXN</span>';
     }
 
-    // Banxico FIX (optional reference)
     try {
-      // Banxico CORS-friendly: sie.banxico.org.mx
       const today = new Date();
       const endDate = today.toISOString().split('T')[0];
       const startDate = new Date(today.getTime() - 7*24*60*60*1000).toISOString().split('T')[0];
       const url = `https://www.banxico.org.mx/SieAPIRest/service/v1/series/SF43718/datos/${startDate}/${endDate}?token=c8ddf5c9c22de4e87ab52d5f3d34e48b2b8a8a2c6d1b6e0e9a4e8e8e8e8e8e8e`;
-      // Note: Banxico requires a real token. Keeping as reference only - will gracefully fail.
       const r = await fetch(url);
       const data = await r.json();
-      if (data && data.bmx && data.bmx.series && data.bmx.series[0].datos) {
+      if (data?.bmx?.series?.[0]?.datos) {
         const datos = data.bmx.series[0].datos;
-        const last = datos[datos.length - 1];
-        state.banxico = parseFloat(last.dato);
+        state.banxico = parseFloat(datos[datos.length - 1].dato);
         document.getElementById('banxicoRow').style.display = 'flex';
         document.getElementById('banxicoRate').textContent = state.banxico.toFixed(4);
       }
-    } catch(e){ /* banxico silently unavailable */ }
+    } catch(e){}
 
     setTimeout(() => btn.classList.remove('spinning'), 700);
     recalc();
   }
 
-  function formatTime(d){
-    return d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  }
+  function formatTime(d){ return d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
 
-  // --- Direction toggle ---
   document.querySelectorAll('.dir-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active'));
@@ -912,102 +651,56 @@ function initApp() {
     });
   });
 
-  // --- Input handling ---
   function parseNum(v){
     if (!v) return 0;
-    const cleaned = String(v).replace(/,/g, '').replace(/[^0-9.\-]/g, '');
-    const n = parseFloat(cleaned);
+    const n = parseFloat(String(v).replace(/,/g, '').replace(/[^0-9.\-]/g, ''));
     return isNaN(n) ? 0 : n;
   }
-
-  function formatMoney(n, decimals){
-    if (decimals == null) decimals = 2;
-    return n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-  }
-
-  // Bidirectional BPS <-> centavos
-  // 1 bps = 0.01% of the rate
-  // In centavos (MXN): 1 bps = (rate * 0.0001) MXN = (rate * 0.01) centavos
-  function bpsToCent(bps){
-    if (!state.fxMid) return 0;
-    return bps * state.fxMid * 0.01;
-  }
-  function centToBps(cent){
-    if (!state.fxMid) return 0;
-    return cent / (state.fxMid * 0.01);
-  }
+  function formatMoney(n, decimals){ return n.toLocaleString('en-US', { minimumFractionDigits: decimals ?? 2, maximumFractionDigits: decimals ?? 2 }); }
+  function bpsToCent(bps){ return state.fxMid ? bps * state.fxMid * 0.01 : 0; }
+  function centToBps(cent){ return state.fxMid ? cent / (state.fxMid * 0.01) : 0; }
 
   function bindPair(bpsId, centId, setter){
     const bpsEl = document.getElementById(bpsId);
     const centEl = document.getElementById(centId);
     let locking = false;
-
     bpsEl.addEventListener('input', () => {
-      if (locking) return;
-      locking = true;
-      const v = parseNum(bpsEl.value);
-      setter(v);
+      if (locking) return; locking = true;
+      const v = parseNum(bpsEl.value); setter(v);
       centEl.value = state.fxMid ? bpsToCent(v).toFixed(4) : '';
-      bpsEl.classList.add('highlight');
-      centEl.classList.remove('highlight');
-      locking = false;
-      recalc();
+      bpsEl.classList.add('highlight'); centEl.classList.remove('highlight');
+      locking = false; recalc();
     });
     centEl.addEventListener('input', () => {
-      if (locking) return;
-      locking = true;
+      if (locking) return; locking = true;
       const v = parseNum(centEl.value);
-      const bps = state.fxMid ? centToBps(v) : 0;
-      setter(bps);
+      const bps = state.fxMid ? centToBps(v) : 0; setter(bps);
       bpsEl.value = bps.toFixed(4);
-      centEl.classList.add('highlight');
-      bpsEl.classList.remove('highlight');
-      locking = false;
-      recalc();
+      centEl.classList.add('highlight'); bpsEl.classList.remove('highlight');
+      locking = false; recalc();
     });
   }
-
   bindPair('bpsProv', 'centProv', v => state.bpsProv = v);
   bindPair('bpsCli', 'centCli', v => state.bpsCli = v);
 
-  // Handlers para montos USD/MXN con sincronizacion
   function updateMontoDisplay(){
-    const usdEl = document.getElementById('montoUsd');
-    const mxnEl = document.getElementById('montoMxn');
-    usdEl.classList.toggle('highlight', state.montoSource === 'usd');
-    mxnEl.classList.toggle('highlight', state.montoSource === 'mxn');
+    document.getElementById('montoUsd').classList.toggle('highlight', state.montoSource === 'usd');
+    document.getElementById('montoMxn').classList.toggle('highlight', state.montoSource === 'mxn');
   }
-
   document.getElementById('montoUsd').addEventListener('input', e => {
-    const val = parseNum(e.target.value);
-    state.montoUsd = val;
-    state.montoSource = 'usd';
-    if (val > 0) {
-      e.target.value = val.toLocaleString('en-US', { maximumFractionDigits: 2 });
-    }
-    updateMontoDisplay();
-    recalc();
+    const val = parseNum(e.target.value); state.montoUsd = val; state.montoSource = 'usd';
+    if (val > 0) e.target.value = val.toLocaleString('en-US', { maximumFractionDigits: 2 });
+    updateMontoDisplay(); recalc();
   });
-
   document.getElementById('montoMxn').addEventListener('input', e => {
-    const val = parseNum(e.target.value);
-    state.montoMxn = val;
-    state.montoSource = 'mxn';
-    if (val > 0) {
-      e.target.value = val.toLocaleString('en-US', { maximumFractionDigits: 2 });
-    }
-    updateMontoDisplay();
-    recalc();
+    const val = parseNum(e.target.value); state.montoMxn = val; state.montoSource = 'mxn';
+    if (val > 0) e.target.value = val.toLocaleString('en-US', { maximumFractionDigits: 2 });
+    updateMontoDisplay(); recalc();
   });
 
-  // --- Recalculation ---
   function recalc(){
     const totalBps = state.bpsProv + state.bpsCli;
     const totalCent = bpsToCent(totalBps);
-
-    document.getElementById('totalBps').textContent = totalBps.toFixed(2);
-    document.getElementById('totalCent').textContent = totalCent.toFixed(4);
-
     if (!state.fxMid) return;
 
     const mid = state.fxMid;
@@ -1017,143 +710,108 @@ function initApp() {
       ? mid + (mid * state.bpsProv / 10000)
       : mid - (mid * state.bpsProv / 10000);
 
-    // Vista interna
-    document.getElementById('outMid').textContent = mid.toFixed(4);
-    document.getElementById('outProvRate').textContent = providerRate.toFixed(4);
-    document.getElementById('outAdj').textContent = (state.direction === 'buy' ? '+' : '-') + adjust.toFixed(4);
+    // Vista cliente
     document.getElementById('outFinal').textContent = '$' + finalRate.toFixed(4);
-    document.getElementById('outTotalBpsInt').textContent = totalBps.toFixed(2) + ' bps';
-    document.getElementById('outTotalCentInt').textContent = totalCent.toFixed(4) + ' ctvs';
-
-    // Vista cliente - labels dinamicos segun direccion
     const receiveLbl = document.getElementById('clientReceiveLbl');
     const getLbl = document.getElementById('clientGetLbl');
     const receiveEl = document.getElementById('clientReceive');
     const getEl = document.getElementById('clientGet');
 
     if (state.direction === 'buy') {
-      // Cliente compra USD: nos entrega MXN, recibe USD
       receiveLbl.textContent = 'Monto que recibe The OTC Desk (MXN)';
       getLbl.textContent = 'Monto que recibe el cliente (USD)';
     } else {
-      // Cliente vende USD: nos entrega USD, recibe MXN
       receiveLbl.textContent = 'Monto que recibe The OTC Desk (USD)';
       getLbl.textContent = 'Monto que recibe el cliente (MXN)';
     }
 
-    // Sincronizar montos USD <-> MXN segun cual fue editado
+    // Desglose interno — Capa 1: Resumen
+    document.getElementById('intMid').textContent = mid.toFixed(4);
+    document.getElementById('intTcCliente').textContent = finalRate.toFixed(4);
+    document.getElementById('intBpsTotal').textContent = '+' + totalBps.toFixed(2);
+    document.getElementById('intCtvTotal').textContent = '+' + totalCent.toFixed(4);
+
+    // Capa 2: Proveedor
+    document.getElementById('intTcProv').textContent = providerRate.toFixed(4);
+    document.getElementById('intBpsProv').textContent = '+' + state.bpsProv.toFixed(2);
+    document.getElementById('intCtvProv').textContent = '+' + bpsToCent(state.bpsProv).toFixed(4);
+
+    // Capa 3: Nuestro margen
+    document.getElementById('intTcClienteMargin').textContent = finalRate.toFixed(4);
+    document.getElementById('intBpsNuestro').textContent = '+' + state.bpsCli.toFixed(2);
+    document.getElementById('intCtvNuestro').textContent = '+' + bpsToCent(state.bpsCli).toFixed(4);
+
+    // Sincronizar montos
     let usdVal, mxnVal;
     if (state.montoSource === 'usd' && state.montoUsd > 0) {
-      usdVal = state.montoUsd;
-      mxnVal = usdVal * finalRate;
+      usdVal = state.montoUsd; mxnVal = usdVal * finalRate;
       state.montoMxn = mxnVal;
       document.getElementById('montoMxn').value = mxnVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     } else if (state.montoSource === 'mxn' && state.montoMxn > 0) {
-      mxnVal = state.montoMxn;
-      usdVal = mxnVal / finalRate;
+      mxnVal = state.montoMxn; usdVal = mxnVal / finalRate;
       state.montoUsd = usdVal;
       document.getElementById('montoUsd').value = usdVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    } else {
-      usdVal = 0;
-      mxnVal = 0;
-    }
+    } else { usdVal = 0; mxnVal = 0; }
 
     if (usdVal > 0) {
-      document.getElementById('pnlGrid').style.display = 'grid';
-      let clientReceiveAmt, clientGetAmt, providerSpreadCost, yourGain;
-
-      // Costo del proveedor = lo que nos cuesta SU spread en MXN
-      // = USD notional * (diferencia entre providerRate y mid)
-      providerSpreadCost = usdVal * Math.abs(providerRate - mid);
-
-      // Tu margen = lo que ganas por tus propios BPS
-      // = USD notional * (diferencia entre finalRate y providerRate)
-      yourGain = usdVal * Math.abs(finalRate - providerRate);
+      const providerSpreadCost = usdVal * Math.abs(providerRate - mid);
+      const yourGain = usdVal * Math.abs(finalRate - providerRate);
 
       if (state.direction === 'buy') {
-        // Cliente compra USD: entrega MXN, recibe USD
-        clientReceiveAmt = mxnVal;                // MXN que nos entrega
-        clientGetAmt = usdVal;                    // USD que recibe
-
-        receiveEl.textContent = '$' + formatMoney(clientReceiveAmt, 2) + ' MXN';
-        getEl.textContent = '$' + formatMoney(clientGetAmt, 2) + ' USD';
+        receiveEl.textContent = '$' + formatMoney(mxnVal, 2) + ' MXN';
+        getEl.textContent = '$' + formatMoney(usdVal, 2) + ' USD';
       } else {
-        // Cliente vende USD: entrega USD, recibe MXN
-        clientReceiveAmt = usdVal;                // USD que nos entrega
-        clientGetAmt = mxnVal;                    // MXN que recibe
-
-        receiveEl.textContent = '$' + formatMoney(clientReceiveAmt, 2) + ' USD';
-        getEl.textContent = '$' + formatMoney(clientGetAmt, 2) + ' MXN';
+        receiveEl.textContent = '$' + formatMoney(usdVal, 2) + ' USD';
+        getEl.textContent = '$' + formatMoney(mxnVal, 2) + ' MXN';
       }
 
-      document.getElementById('pnlProv').textContent = '$' + formatMoney(providerSpreadCost, 2) + ' MXN';
-      document.getElementById('pnlGain').textContent = '+$' + formatMoney(yourGain, 2) + ' MXN';
+      // Proveedor fee + total
+      document.getElementById('provFeeRow').style.display = 'flex';
+      document.getElementById('intProvFee').textContent = '−$' + formatMoney(providerSpreadCost, 2) + ' MXN';
+      document.getElementById('provTotalBox').style.display = 'flex';
+      const provTotal = state.direction === 'buy'
+        ? '$' + formatMoney(usdVal * providerRate, 2) + ' MXN'
+        : '$' + formatMoney(mxnVal / providerRate, 2) + ' USD';
+      document.getElementById('intProvTotal').textContent = provTotal;
+
+      // Margen total
+      document.getElementById('marginTotalBox').style.display = 'flex';
+      document.getElementById('intMarginTotal').textContent = '+$' + formatMoney(yourGain, 2) + ' MXN';
     } else {
-      document.getElementById('pnlGrid').style.display = 'none';
-      receiveEl.textContent = '—';
-      getEl.textContent = '—';
+      receiveEl.textContent = '—'; getEl.textContent = '—';
+      document.getElementById('provFeeRow').style.display = 'none';
+      document.getElementById('provTotalBox').style.display = 'none';
+      document.getElementById('marginTotalBox').style.display = 'none';
     }
   }
 
-  // --- Copy summary (solo info para cliente) ---
   const STALE_SECONDS = 15;
-
-  function isFxStale(){
-    if (!state.fxTime) return true;
-    const elapsed = (Date.now() - state.fxTime.getTime()) / 1000;
-    return elapsed > STALE_SECONDS;
-  }
-
+  function isFxStale(){ return !state.fxTime || (Date.now() - state.fxTime.getTime()) / 1000 > STALE_SECONDS; }
   function updateCopyBtnLabel(){
     const btn = document.getElementById('copyBtn');
     const refreshBtn = document.getElementById('refreshBtn');
     const stale = isFxStale() && state.fxTime;
-    if (stale) {
-      btn.textContent = 'Refrescar y copiar';
-      btn.classList.add('stale');
-      refreshBtn.classList.add('stale');
-    } else {
-      btn.textContent = 'Copiar para cliente';
-      btn.classList.remove('stale');
-      refreshBtn.classList.remove('stale');
-    }
+    btn.textContent = stale ? 'Refrescar y copiar' : 'Copiar para cliente';
+    btn.classList.toggle('stale', !!stale);
+    refreshBtn.classList.toggle('stale', !!stale);
   }
-
-  // Check stale status every second
   setInterval(updateCopyBtnLabel, 1000);
 
-  async function doCopy(){
-    // funcion legacy - ahora se usa buildClientText + copyTextMobileSafe
-    // dejada para compatibilidad por si algo externo la llama
-  }
-
-  // Construye el texto del mensaje para copiar al cliente
   function buildClientText(){
     if (!state.fxMid) return null;
-    const usdVal = state.montoUsd;
-    const mxnVal = state.montoMxn;
+    const usdVal = state.montoUsd, mxnVal = state.montoMxn;
     if (usdVal <= 0 || mxnVal <= 0) return null;
-
     const totalBps = state.bpsProv + state.bpsCli;
     const mid = state.fxMid;
     const adjust = mid * (totalBps / 10000);
     const finalRate = state.direction === 'buy' ? mid + adjust : mid - adjust;
     const now = new Date();
-
-    // Recalcular montos con finalRate actualizado
     let freshUsd = usdVal, freshMxn = mxnVal;
-    if (state.montoSource === 'usd') {
-      freshMxn = freshUsd * finalRate;
-    } else if (state.montoSource === 'mxn') {
-      freshUsd = freshMxn / finalRate;
-    }
-
-    const bold = (s) => '*' + s + '*';
+    if (state.montoSource === 'usd') freshMxn = freshUsd * finalRate;
+    else if (state.montoSource === 'mxn') freshUsd = freshMxn / finalRate;
+    const bold = s => '*' + s + '*';
     const src = state.montoSource;
-
-    let otcMonto, otcUnit, clienteMonto, clienteUnit;
-    let otcBold, clienteBold;
-
+    let otcMonto, otcUnit, clienteMonto, clienteUnit, otcBold, clienteBold;
     if (state.direction === 'buy') {
       otcMonto = formatMoney(freshMxn, 2); otcUnit = 'MXN';
       clienteMonto = formatMoney(freshUsd, 2); clienteUnit = 'USD';
@@ -1163,10 +821,8 @@ function initApp() {
       clienteMonto = formatMoney(freshMxn, 2); clienteUnit = 'MXN';
       otcBold = (src === 'usd'); clienteBold = (src === 'mxn');
     }
-
     const otcStr = `$${otcMonto} ${otcUnit}`;
     const clienteStr = `$${clienteMonto} ${clienteUnit}`;
-
     let txt = `Cotización The OTC Desk\n\n`;
     txt += `Monto que recibe The OTC Desk: ${otcBold ? bold(otcStr) : otcStr}\n`;
     txt += `Tipo de cambio USD/MXN: $${finalRate.toFixed(4)}\n`;
@@ -1175,83 +831,47 @@ function initApp() {
     return txt;
   }
 
-  // Copia usando ClipboardItem con Promise - funciona en Safari iOS despues de await
   async function copyTextMobileSafe(textPromiseOrString) {
-    // Si es string directo, usar writeText simple
     if (typeof textPromiseOrString === 'string') {
-      try {
-        await navigator.clipboard.writeText(textPromiseOrString);
-        return true;
-      } catch(e) {
-        return fallbackCopy(textPromiseOrString);
-      }
+      try { await navigator.clipboard.writeText(textPromiseOrString); return true; }
+      catch(e) { return fallbackCopy(textPromiseOrString); }
     }
-
-    // Si es Promise, usar ClipboardItem (Safari iOS friendly)
     try {
       if (typeof ClipboardItem !== 'undefined' && navigator.clipboard.write) {
-        const blobPromise = textPromiseOrString.then(text =>
-          new Blob([text], { type: 'text/plain' })
-        );
-        await navigator.clipboard.write([
-          new ClipboardItem({ 'text/plain': blobPromise })
-        ]);
+        const blobPromise = textPromiseOrString.then(text => new Blob([text], { type: 'text/plain' }));
+        await navigator.clipboard.write([new ClipboardItem({ 'text/plain': blobPromise })]);
         return true;
       } else {
-        // Fallback: esperar la promesa y usar writeText
         const text = await textPromiseOrString;
         await navigator.clipboard.writeText(text);
         return true;
       }
     } catch(e) {
       const text = await textPromiseOrString.catch(() => null);
-      if (text) return fallbackCopy(text);
-      return false;
+      return text ? fallbackCopy(text) : false;
     }
   }
-
-  // Fallback: textarea + execCommand (para navegadores viejos)
   function fallbackCopy(text) {
     try {
       const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      ta.style.left = '-9999px';
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      const ok = document.execCommand('copy');
-      document.body.removeChild(ta);
-      return ok;
+      ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;left:-9999px';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      const ok = document.execCommand('copy'); document.body.removeChild(ta); return ok;
     } catch(e) { return false; }
   }
 
   document.getElementById('copyBtn').addEventListener('click', async () => {
     const btn = document.getElementById('copyBtn');
-
     if (!state.fxMid) { showToast('Falta tipo de cambio'); return; }
     if (state.montoUsd <= 0 || state.montoMxn <= 0) { showToast('Falta monto'); return; }
-
     const stale = isFxStale() && state.fxTime;
-
     if (stale) {
-      // IMPORTANTE: preparamos una Promise que resolvera con el texto DESPUES del refresh.
-      // Esto mantiene el user gesture context en iOS Safari.
-      btn.textContent = 'Refrescando...';
-      btn.disabled = true;
-
-      const textPromise = (async () => {
-        await fetchFx();
-        return buildClientText() || '';
-      })();
-
+      btn.textContent = 'Refrescando...'; btn.disabled = true;
+      const textPromise = (async () => { await fetchFx(); return buildClientText() || ''; })();
       const ok = await copyTextMobileSafe(textPromise);
-      btn.disabled = false;
-      updateCopyBtnLabel();
+      btn.disabled = false; updateCopyBtnLabel();
       showToast(ok ? 'Copiado actualizado' : 'Error al copiar');
     } else {
-      // Copia inmediata sin refresh
       const txt = buildClientText();
       if (!txt) { showToast('Falta info'); return; }
       const ok = await copyTextMobileSafe(txt);
@@ -1259,39 +879,19 @@ function initApp() {
     }
   });
 
-  // --- History ---
   function loadHistory(){
-    try {
-      const saved = sessionStorage.getItem('bps_history');
-      if (saved) state.history = JSON.parse(saved);
-    } catch(e){}
+    try { const saved = sessionStorage.getItem('bps_history'); if (saved) state.history = JSON.parse(saved); } catch(e){}
     renderHistory();
   }
-
-  function saveHistory(){
-    try { sessionStorage.setItem('bps_history', JSON.stringify(state.history)); } catch(e){}
-  }
-
+  function saveHistory(){ try { sessionStorage.setItem('bps_history', JSON.stringify(state.history)); } catch(e){} }
   function renderHistory(){
     const wrap = document.getElementById('historySection');
     const list = document.getElementById('histList');
-    if (state.history.length === 0) {
-      wrap.style.display = 'none';
-      return;
-    }
+    if (!state.history.length) { wrap.style.display = 'none'; return; }
     wrap.style.display = 'block';
     list.innerHTML = state.history.slice().reverse().map(h => {
-      const dir = h.direction === 'buy' ? 'USD→MXN' : 'MXN→USD';
-      return `<div class="hist-item">
-        <div class="left">
-          <span class="dir">${dir}</span>
-          <span class="rate">${h.finalRate.toFixed(4)}</span>
-        </div>
-        <div class="right">
-          <span class="bps">${h.totalBps.toFixed(1)} bps</span>
-          <div class="time">${h.time}</div>
-        </div>
-      </div>`;
+      const dir = h.direction === 'buy' ? 'MXN→USD' : 'USD→MXN';
+      return `<div class="hist-item"><div class="left"><span class="dir">${dir}</span><span class="rate">${h.finalRate.toFixed(4)}</span></div><div class="right"><span class="bps">${h.totalBps.toFixed(1)} bps</span><div class="time">${h.time}</div></div></div>`;
     }).join('');
   }
 
@@ -1301,56 +901,35 @@ function initApp() {
     const mid = state.fxMid;
     const adjust = mid * (totalBps / 10000);
     const finalRate = state.direction === 'buy' ? mid + adjust : mid - adjust;
-
     state.history.push({
-      direction: state.direction,
-      mid: mid,
-      totalBps: totalBps,
-      finalRate: finalRate,
-      montoUsd: state.montoUsd,
-      montoMxn: state.montoMxn,
-      montoSource: state.montoSource,
+      direction: state.direction, mid, totalBps, finalRate,
+      montoUsd: state.montoUsd, montoMxn: state.montoMxn, montoSource: state.montoSource,
       time: new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
     });
     if (state.history.length > 10) state.history = state.history.slice(-10);
-    saveHistory();
-    renderHistory();
-    showToast('Guardada');
+    saveHistory(); renderHistory(); showToast('Guardada');
   });
 
-  document.getElementById('clearHist').addEventListener('click', () => {
-    state.history = [];
-    saveHistory();
-    renderHistory();
-  });
+  document.getElementById('clearHist').addEventListener('click', () => { state.history = []; saveHistory(); renderHistory(); });
 
-  // --- Toggle vista interna ---
   document.getElementById('intToggle').addEventListener('click', () => {
     const body = document.getElementById('internalBody');
     const btn = document.getElementById('intToggle');
-    if (body.style.display === 'none') {
-      body.style.display = 'block';
-      btn.textContent = 'ocultar';
-    } else {
-      body.style.display = 'none';
-      btn.textContent = 'mostrar';
-    }
+    if (body.style.display === 'none') { body.style.display = 'block'; btn.textContent = 'ocultar'; }
+    else { body.style.display = 'none'; btn.textContent = 'mostrar'; }
   });
 
-  // --- Toast ---
   function showToast(msg){
     const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
+    t.textContent = msg; t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 1800);
   }
 
-  // --- Init ---
   document.getElementById('refreshBtn').addEventListener('click', fetchFx);
   loadHistory();
   fetchFx();
 })();
-} // fin initApp
+}
 </script>
 </body>
 </html>
