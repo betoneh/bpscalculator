@@ -1,1 +1,1356 @@
-{"type":"error","error":{"type":"overloaded_error","message":"Service is temporarily unavailable. You can try again.","details":{"error_visibility":"user_facing","error_code":"conversation_store_unavailable"}},"request_id":"req_011Ca8XdLs8kftWhTYq9qCex"}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0a0a">
+<title>BPS Calculator · OTC Desk</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface-2: #1c1c1c;
+    --border: #262626;
+    --border-strong: #3a3a3a;
+    --text: #f5f5f5;
+    --text-mute: #888;
+    --text-dim: #555;
+    --accent: #d4af37;
+    --accent-dim: #8a7020;
+    --green: #4ade80;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --radius: 10px;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100vh;
+    overscroll-behavior: none;
+  }
+
+  body { padding: 12px; padding-bottom: 40px; max-width: 520px; margin: 0 auto; }
+
+  .header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header h1 { font-size: 16px; font-weight: 600; letter-spacing: -0.3px; }
+  .header .sub { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; }
+
+  /* Direction toggle */
+  .direction-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;
+    margin-bottom: 10px;
+  }
+  .dir-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-mute);
+    padding: 8px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+  }
+  .dir-btn .dir-main { font-size: 13px; font-weight: 600; letter-spacing: 0.2px; }
+  .dir-btn .dir-sub { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.6px; }
+
+  /* MXN = verde bandera de México (#006847), USD = azul bandera USA (#0A3161) */
+  .dir-btn[data-dir="sell"].active {
+    /* Cliente vende USD, recibe MXN -> verde MX */
+    background: #006847;
+    color: #fff;
+    border-color: #006847;
+  }
+  .dir-btn[data-dir="sell"].active .dir-sub { color: #fff; opacity: 0.75; }
+
+  .dir-btn[data-dir="buy"].active {
+    /* Cliente compra USD -> azul USA */
+    background: #0A3161;
+    color: #fff;
+    border-color: #0A3161;
+  }
+  .dir-btn[data-dir="buy"].active .dir-sub { color: #fff; opacity: 0.75; }
+
+  .dir-btn:active:not(.active) { background: var(--surface-2); }
+
+  /* FX rate card - compacto, una sola linea */
+  .fx-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .fx-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .fx-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.6px; white-space: nowrap; }
+  .fx-rate { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; font-variant-numeric: tabular-nums; line-height: 1; }
+  .fx-rate .unit { font-size: 11px; color: var(--text-mute); font-weight: 400; margin-left: 3px; }
+  .fx-meta { display: flex; gap: 6px; font-size: 10px; color: var(--text-dim); align-items: center; }
+  .fx-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-dim); display: inline-block; }
+  .fx-refresh {
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    color: var(--text-mute);
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .fx-refresh:active { transform: scale(0.92); }
+  .fx-refresh svg { width: 13px; height: 13px; }
+  .fx-refresh.spinning svg { animation: spin 0.7s linear; }
+  .fx-refresh.stale {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+    animation: pulse-stale 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse-stale {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+    50% { box-shadow: 0 0 0 5px rgba(212, 175, 55, 0); }
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .banxico {
+    font-size: 10px;
+    color: var(--text-dim);
+    padding: 6px 12px;
+    margin-top: -10px;
+    margin-bottom: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    display: flex;
+    justify-content: space-between;
+  }
+  .banxico b { color: var(--text-mute); font-weight: 500; }
+
+  /* Section */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .section-title .hint { color: var(--text-dim); text-transform: none; letter-spacing: 0; font-size: 10px; }
+
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    align-items: end;
+  }
+  .input-group label {
+    display: block;
+    font-size: 10px;
+    color: var(--text-mute);
+    margin-bottom: 3px;
+  }
+  .input-group input {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 9px 10px;
+    border-radius: 7px;
+    font-size: 15px;
+    font-family: inherit;
+    font-variant-numeric: tabular-nums;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .input-group input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .input-group input.highlight {
+    border-color: var(--accent);
+    background: rgba(212, 175, 55, 0.05);
+  }
+
+  .equiv {
+    text-align: center;
+    font-size: 10px;
+    color: var(--text-dim);
+    margin: 4px 0 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Total */
+  .total-card {
+    background: var(--surface-2);
+    border: 1px solid var(--accent-dim);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+  .total-label { font-size: 10px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+  .total-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .total-item .val { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.3px; line-height: 1.1; }
+  .total-item .cap { font-size: 10px; color: var(--text-mute); margin-top: 1px; }
+
+  /* Output card - vista cliente */
+  .output {
+    background: var(--surface);
+    border: 1px solid var(--accent-dim);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    position: relative;
+  }
+  .output::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    border-radius: var(--radius) 0 0 var(--radius);
+  }
+  .output-title {
+    font-size: 10px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .output-title .tag {
+    background: var(--accent);
+    color: #000;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Internal view */
+  .internal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .internal-title {
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .internal-title .tag {
+    background: var(--border-strong);
+    color: var(--text-mute);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+  }
+  .internal-toggle {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    margin-left: auto;
+    font-size: 10px;
+    font-family: inherit;
+    padding: 2px 6px;
+  }
+  .output-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    font-variant-numeric: tabular-nums;
+  }
+  .output-row:last-child { border-bottom: none; }
+  .output-row .k { font-size: 12px; color: var(--text-mute); }
+  .output-row .v { font-size: 14px; font-weight: 500; }
+  .output-row.hero { padding: 8px 0; }
+  .output-row.hero .k { font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.6px; }
+  .output-row.hero .v { font-size: 20px; font-weight: 600; color: var(--accent); }
+
+  .pnl-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .pnl-item {
+    background: var(--surface-2);
+    border-radius: 6px;
+    padding: 7px 8px;
+    text-align: center;
+  }
+  .pnl-item .lbl { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .pnl-item .val { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .pnl-item.pos .val { color: var(--green); }
+  .pnl-item.neg .val { color: var(--red); }
+
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .btn {
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    padding: 10px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .btn:active { transform: scale(0.98); background: var(--surface-2); }
+  .btn.primary { background: var(--accent); color: #000; border-color: var(--accent); }
+  .btn.stale {
+    background: rgba(248, 113, 113, 0.1);
+    border-color: var(--red);
+    color: var(--red);
+  }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* History */
+  .history {
+    margin-top: 12px;
+  }
+  .history-title {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .history-clear {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-size: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .hist-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .hist-item .left { display: flex; flex-direction: column; gap: 2px; }
+  .hist-item .dir { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+  .hist-item .rate { font-size: 14px; font-weight: 500; }
+  .hist-item .right { text-align: right; }
+  .hist-item .bps { color: var(--accent); font-size: 12px; }
+  .hist-item .time { color: var(--text-dim); font-size: 10px; margin-top: 2px; }
+
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--text);
+    color: var(--bg);
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 100;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .error { color: var(--red); font-size: 11px; margin-top: 4px; }
+
+  input[type="number"] { -moz-appearance: textfield; }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  /* Login gate */
+  .gate {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1000;
+  }
+  .gate-box {
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+  }
+  .gate-brand {
+    font-size: 11px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .gate-title {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    margin-bottom: 6px;
+  }
+  .gate-sub {
+    font-size: 13px;
+    color: var(--text-mute);
+    margin-bottom: 28px;
+  }
+  .gate-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: inherit;
+    letter-spacing: 2px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .gate-input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .gate-input.err {
+    border-color: var(--red);
+    animation: shake 0.3s;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+  .gate-btn {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    color: #000;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 0.3px;
+  }
+  .gate-btn:active { transform: scale(0.98); }
+  .gate-err-msg {
+    color: var(--red);
+    font-size: 12px;
+    margin-top: 10px;
+    min-height: 16px;
+  }
+  .gate-foot {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 24px;
+    letter-spacing: 0.5px;
+  }
+  .gate-foot .week { color: var(--text-mute); }
+  .app-hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- Login gate -->
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <div class="gate-brand">The OTC Desk</div>
+    <div class="gate-title">BPS Calculator</div>
+    <div class="gate-sub">Acceso restringido</div>
+    <input type="password" class="gate-input" id="gateInput" placeholder="contraseña" autocomplete="off" inputmode="text" />
+    <button class="gate-btn" id="gateBtn">Entrar</button>
+    <div class="gate-err-msg" id="gateErr"></div>
+  </div>
+</div>
+
+<!-- App (oculta hasta que pase el gate) -->
+<div id="app" class="app-hidden">
+
+<div class="header">
+  <h1>BPS Calculator</h1>
+  <span class="sub">The OTC Desk</span>
+</div>
+
+<!-- Direction toggle -->
+<div class="direction-wrap" role="tablist">
+  <button class="dir-btn active" data-dir="buy" role="tab">
+    <span class="dir-main">MXN → USD</span>
+    <span class="dir-sub">Cliente compra USD</span>
+  </button>
+  <button class="dir-btn" data-dir="sell" role="tab">
+    <span class="dir-main">USD → MXN</span>
+    <span class="dir-sub">Cliente vende USD</span>
+  </button>
+</div>
+
+<!-- FX Rate -->
+<div class="fx-card">
+  <div class="fx-main">
+    <span class="fx-label">USD/MXN</span>
+    <span class="fx-rate" id="fxRate">—<span class="unit">MXN</span></span>
+    <span class="fx-meta">
+      <span id="fxSource">cargando...</span>
+      <span class="dot"></span>
+      <span id="fxTime"></span>
+    </span>
+  </div>
+  <button class="fx-refresh" id="refreshBtn" aria-label="Refrescar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+      <path d="M21 3v5h-5"/>
+      <path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+      <path d="M3 21v-5h5"/>
+    </svg>
+  </button>
+</div>
+<div class="banxico" id="banxicoRow" style="display:none;">
+  <span>Banxico FIX</span>
+  <b id="banxicoRate">—</b>
+</div>
+
+<!-- Monto nominal -->
+<div class="section">
+  <div class="section-title">
+    <span>Monto de la operación</span>
+    <span class="hint">edita cualquiera</span>
+  </div>
+  <div class="input-row">
+    <div class="input-group">
+      <label>USD</label>
+      <input type="text" inputmode="decimal" id="montoUsd" placeholder="100,000" />
+    </div>
+    <div class="input-group">
+      <label>MXN</label>
+      <input type="text" inputmode="decimal" id="montoMxn" placeholder="1,723,645" />
+    </div>
+  </div>
+</div>
+
+<!-- BPS proveedor -->
+<div class="section">
+  <div class="section-title">
+    <span>BPS proveedor de liquidez</span>
+    <span class="hint">tu costo</span>
+  </div>
+  <div class="input-row">
+    <div class="input-group">
+      <label>Puntos base</label>
+      <input type="text" inputmode="decimal" id="bpsProv" placeholder="0" />
+    </div>
+    <div class="input-group">
+      <label>Centavos MXN</label>
+      <input type="text" inputmode="decimal" id="centProv" placeholder="0" />
+    </div>
+  </div>
+</div>
+
+<!-- BPS cliente -->
+<div class="section">
+  <div class="section-title">
+    <span>BPS que cobras al cliente</span>
+    <span class="hint">tu margen</span>
+  </div>
+  <div class="input-row">
+    <div class="input-group">
+      <label>Puntos base</label>
+      <input type="text" inputmode="decimal" id="bpsCli" placeholder="0" />
+    </div>
+    <div class="input-group">
+      <label>Centavos MXN</label>
+      <input type="text" inputmode="decimal" id="centCli" placeholder="0" />
+    </div>
+  </div>
+</div>
+
+<!-- Total BPS -->
+<div class="total-card">
+  <div class="total-label">Total spread</div>
+  <div class="total-grid">
+    <div class="total-item">
+      <div class="val" id="totalBps">0</div>
+      <div class="cap">BPS totales</div>
+    </div>
+    <div class="total-item">
+      <div class="val" id="totalCent">0.00</div>
+      <div class="cap">centavos MXN</div>
+    </div>
+  </div>
+</div>
+
+<!-- Output - Vista cliente -->
+<div class="output" id="output">
+  <div class="output-title">
+    Para el cliente <span class="tag">Enviar</span>
+  </div>
+  <div class="output-row">
+    <span class="k" id="clientReceiveLbl">Monto que recibe The OTC Desk</span>
+    <span class="v" id="clientReceive">—</span>
+  </div>
+  <div class="output-row">
+    <span class="k">Tipo de cambio USD/MXN</span>
+    <span class="v" id="outFinal">—</span>
+  </div>
+  <div class="output-row hero">
+    <span class="k" id="clientGetLbl">Monto que recibe el cliente</span>
+    <span class="v" id="clientGet">—</span>
+  </div>
+
+  <div class="actions">
+    <button class="btn" id="copyBtn">Copiar para cliente</button>
+    <button class="btn primary" id="saveBtn">Guardar</button>
+  </div>
+</div>
+
+<!-- Vista interna -->
+<div class="internal" id="internal">
+  <div class="internal-title">
+    Interno <span class="tag">No enviar</span>
+    <button class="internal-toggle" id="intToggle">ocultar</button>
+  </div>
+  <div id="internalBody">
+    <div class="output-row">
+      <span class="k">Tipo XE (mid)</span>
+      <span class="v" id="outMid">—</span>
+    </div>
+    <div class="output-row">
+      <span class="k">Tipo proveedor</span>
+      <span class="v" id="outProvRate">—</span>
+    </div>
+    <div class="output-row">
+      <span class="k">Ajuste spread</span>
+      <span class="v" id="outAdj">—</span>
+    </div>
+    <div class="output-row">
+      <span class="k">BPS totales</span>
+      <span class="v" id="outTotalBpsInt">—</span>
+    </div>
+    <div class="output-row">
+      <span class="k">Centavos totales</span>
+      <span class="v" id="outTotalCentInt">—</span>
+    </div>
+    <div class="pnl-grid" id="pnlGrid" style="display:none;">
+      <div class="pnl-item neg">
+        <div class="lbl">Costo spread prov.</div>
+        <div class="val" id="pnlProv">—</div>
+      </div>
+      <div class="pnl-item pos">
+        <div class="lbl">Tu margen</div>
+        <div class="val" id="pnlGain">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- History -->
+<div class="history" id="historySection" style="display:none;">
+  <div class="history-title">
+    <span>Historial de sesión</span>
+    <button class="history-clear" id="clearHist">Limpiar</button>
+  </div>
+  <div id="histList"></div>
+</div>
+
+<div class="toast" id="toast">Copiado</div>
+
+</div>
+<!-- /app -->
+
+<script>
+// ============================================================
+// SIMPLE PASSWORD GATE
+// Password fijo, case-insensitive. Token expira a los 7 dias.
+// ============================================================
+const PASSWORD = "oasis";
+const TOKEN_TTL_DAYS = 7;
+const TOKEN_KEY = "bps_gate_token_v2";
+
+function checkStoredToken() {
+  try {
+    const raw = localStorage.getItem(TOKEN_KEY);
+    if (!raw) return false;
+    const { ts } = JSON.parse(raw);
+    const ageDays = (Date.now() - ts) / (1000 * 60 * 60 * 24);
+    return ageDays <= TOKEN_TTL_DAYS;
+  } catch { return false; }
+}
+
+function saveToken() {
+  localStorage.setItem(TOKEN_KEY, JSON.stringify({ ts: Date.now() }));
+}
+
+function unlockApp() {
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('app').classList.remove('app-hidden');
+  initApp();
+}
+
+function attemptGate(input) {
+  if (input.trim().toLowerCase() === PASSWORD) {
+    saveToken();
+    unlockApp();
+    return true;
+  }
+  return false;
+}
+
+// Auto-unlock si el token sigue valido
+if (checkStoredToken()) {
+  unlockApp();
+} else {
+  const gateInput = document.getElementById('gateInput');
+  const gateBtn = document.getElementById('gateBtn');
+  const gateErr = document.getElementById('gateErr');
+
+  function trySubmit() {
+    const val = gateInput.value;
+    if (!val) return;
+    const ok = attemptGate(val);
+    if (!ok) {
+      gateInput.classList.add('err');
+      gateErr.textContent = 'Contraseña incorrecta';
+      gateInput.value = '';
+      setTimeout(() => {
+        gateInput.classList.remove('err');
+        gateErr.textContent = '';
+      }, 2000);
+    }
+  }
+
+  gateBtn.addEventListener('click', trySubmit);
+  gateInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') trySubmit();
+  });
+  gateInput.focus();
+}
+
+// ============================================================
+// MAIN APP
+// ============================================================
+function initApp() {
+(function(){
+  const state = {
+    direction: 'buy', // 'buy' = cliente compra USD (MXN→USD), 'sell' = cliente vende USD (USD→MXN)
+    fxMid: null,
+    fxSource: '',
+    fxTime: null,
+    banxico: null,
+    montoUsd: 0,
+    montoMxn: 0,
+    montoSource: null, // 'usd' o 'mxn' - cual input fue editado
+    bpsProv: 0,
+    bpsCli: 0,
+    history: []
+  };
+
+  // --- FX fetching ---
+  async function fetchFx(){
+    const btn = document.getElementById('refreshBtn');
+    btn.classList.add('spinning');
+    document.getElementById('fxSource').textContent = 'actualizando...';
+
+    let rate = null, source = '';
+
+    // Primary: exchangerate.host (free, reliable mid-market)
+    try {
+      const r = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=MXN');
+      const data = await r.json();
+      if (data && data.rates && data.rates.MXN) {
+        rate = data.rates.MXN;
+        source = 'exchangerate.host';
+      }
+    } catch(e){}
+
+    // Fallback: open.er-api.com
+    if (!rate) {
+      try {
+        const r = await fetch('https://open.er-api.com/v6/latest/USD');
+        const data = await r.json();
+        if (data && data.rates && data.rates.MXN) {
+          rate = data.rates.MXN;
+          source = 'open.er-api.com';
+        }
+      } catch(e){}
+    }
+
+    // Fallback 2: frankfurter
+    if (!rate) {
+      try {
+        const r = await fetch('https://api.frankfurter.app/latest?from=USD&to=MXN');
+        const data = await r.json();
+        if (data && data.rates && data.rates.MXN) {
+          rate = data.rates.MXN;
+          source = 'frankfurter.app (ECB)';
+        }
+      } catch(e){}
+    }
+
+    if (rate) {
+      state.fxMid = rate;
+      state.fxSource = source;
+      state.fxTime = new Date();
+      document.getElementById('fxRate').innerHTML = rate.toFixed(4) + '<span class="unit">MXN</span>';
+      document.getElementById('fxSource').textContent = source;
+      document.getElementById('fxTime').textContent = formatTime(state.fxTime);
+    } else {
+      document.getElementById('fxSource').textContent = 'error de red';
+      document.getElementById('fxRate').innerHTML = '—<span class="unit">MXN</span>';
+    }
+
+    // Banxico FIX (optional reference)
+    try {
+      // Banxico CORS-friendly: sie.banxico.org.mx
+      const today = new Date();
+      const endDate = today.toISOString().split('T')[0];
+      const startDate = new Date(today.getTime() - 7*24*60*60*1000).toISOString().split('T')[0];
+      const url = `https://www.banxico.org.mx/SieAPIRest/service/v1/series/SF43718/datos/${startDate}/${endDate}?token=c8ddf5c9c22de4e87ab52d5f3d34e48b2b8a8a2c6d1b6e0e9a4e8e8e8e8e8e8e`;
+      // Note: Banxico requires a real token. Keeping as reference only - will gracefully fail.
+      const r = await fetch(url);
+      const data = await r.json();
+      if (data && data.bmx && data.bmx.series && data.bmx.series[0].datos) {
+        const datos = data.bmx.series[0].datos;
+        const last = datos[datos.length - 1];
+        state.banxico = parseFloat(last.dato);
+        document.getElementById('banxicoRow').style.display = 'flex';
+        document.getElementById('banxicoRate').textContent = state.banxico.toFixed(4);
+      }
+    } catch(e){ /* banxico silently unavailable */ }
+
+    setTimeout(() => btn.classList.remove('spinning'), 700);
+    recalc();
+  }
+
+  function formatTime(d){
+    return d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  // --- Direction toggle ---
+  document.querySelectorAll('.dir-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.direction = btn.dataset.dir;
+      recalc();
+    });
+  });
+
+  // --- Input handling ---
+  function parseNum(v){
+    if (!v) return 0;
+    const cleaned = String(v).replace(/,/g, '').replace(/[^0-9.\-]/g, '');
+    const n = parseFloat(cleaned);
+    return isNaN(n) ? 0 : n;
+  }
+
+  function formatMoney(n, decimals){
+    if (decimals == null) decimals = 2;
+    return n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  }
+
+  // Bidirectional BPS <-> centavos
+  // 1 bps = 0.01% of the rate
+  // In centavos (MXN): 1 bps = (rate * 0.0001) MXN = (rate * 0.01) centavos
+  function bpsToCent(bps){
+    if (!state.fxMid) return 0;
+    return bps * state.fxMid * 0.01;
+  }
+  function centToBps(cent){
+    if (!state.fxMid) return 0;
+    return cent / (state.fxMid * 0.01);
+  }
+
+  function bindPair(bpsId, centId, setter){
+    const bpsEl = document.getElementById(bpsId);
+    const centEl = document.getElementById(centId);
+    let locking = false;
+
+    bpsEl.addEventListener('input', () => {
+      if (locking) return;
+      locking = true;
+      const v = parseNum(bpsEl.value);
+      setter(v);
+      centEl.value = state.fxMid ? bpsToCent(v).toFixed(4) : '';
+      bpsEl.classList.add('highlight');
+      centEl.classList.remove('highlight');
+      locking = false;
+      recalc();
+    });
+    centEl.addEventListener('input', () => {
+      if (locking) return;
+      locking = true;
+      const v = parseNum(centEl.value);
+      const bps = state.fxMid ? centToBps(v) : 0;
+      setter(bps);
+      bpsEl.value = bps.toFixed(4);
+      centEl.classList.add('highlight');
+      bpsEl.classList.remove('highlight');
+      locking = false;
+      recalc();
+    });
+  }
+
+  bindPair('bpsProv', 'centProv', v => state.bpsProv = v);
+  bindPair('bpsCli', 'centCli', v => state.bpsCli = v);
+
+  // Handlers para montos USD/MXN con sincronizacion
+  function updateMontoDisplay(){
+    const usdEl = document.getElementById('montoUsd');
+    const mxnEl = document.getElementById('montoMxn');
+    usdEl.classList.toggle('highlight', state.montoSource === 'usd');
+    mxnEl.classList.toggle('highlight', state.montoSource === 'mxn');
+  }
+
+  document.getElementById('montoUsd').addEventListener('input', e => {
+    const val = parseNum(e.target.value);
+    state.montoUsd = val;
+    state.montoSource = 'usd';
+    if (val > 0) {
+      e.target.value = val.toLocaleString('en-US', { maximumFractionDigits: 2 });
+    }
+    updateMontoDisplay();
+    recalc();
+  });
+
+  document.getElementById('montoMxn').addEventListener('input', e => {
+    const val = parseNum(e.target.value);
+    state.montoMxn = val;
+    state.montoSource = 'mxn';
+    if (val > 0) {
+      e.target.value = val.toLocaleString('en-US', { maximumFractionDigits: 2 });
+    }
+    updateMontoDisplay();
+    recalc();
+  });
+
+  // --- Recalculation ---
+  function recalc(){
+    const totalBps = state.bpsProv + state.bpsCli;
+    const totalCent = bpsToCent(totalBps);
+
+    document.getElementById('totalBps').textContent = totalBps.toFixed(2);
+    document.getElementById('totalCent').textContent = totalCent.toFixed(4);
+
+    if (!state.fxMid) return;
+
+    const mid = state.fxMid;
+    const adjust = mid * (totalBps / 10000);
+    const finalRate = state.direction === 'buy' ? mid + adjust : mid - adjust;
+    const providerRate = state.direction === 'buy'
+      ? mid + (mid * state.bpsProv / 10000)
+      : mid - (mid * state.bpsProv / 10000);
+
+    // Vista interna
+    document.getElementById('outMid').textContent = mid.toFixed(4);
+    document.getElementById('outProvRate').textContent = providerRate.toFixed(4);
+    document.getElementById('outAdj').textContent = (state.direction === 'buy' ? '+' : '-') + adjust.toFixed(4);
+    document.getElementById('outFinal').textContent = '$' + finalRate.toFixed(4);
+    document.getElementById('outTotalBpsInt').textContent = totalBps.toFixed(2) + ' bps';
+    document.getElementById('outTotalCentInt').textContent = totalCent.toFixed(4) + ' ctvs';
+
+    // Vista cliente - labels dinamicos segun direccion
+    const receiveLbl = document.getElementById('clientReceiveLbl');
+    const getLbl = document.getElementById('clientGetLbl');
+    const receiveEl = document.getElementById('clientReceive');
+    const getEl = document.getElementById('clientGet');
+
+    if (state.direction === 'buy') {
+      // Cliente compra USD: nos entrega MXN, recibe USD
+      receiveLbl.textContent = 'Monto que recibe The OTC Desk (MXN)';
+      getLbl.textContent = 'Monto que recibe el cliente (USD)';
+    } else {
+      // Cliente vende USD: nos entrega USD, recibe MXN
+      receiveLbl.textContent = 'Monto que recibe The OTC Desk (USD)';
+      getLbl.textContent = 'Monto que recibe el cliente (MXN)';
+    }
+
+    // Sincronizar montos USD <-> MXN segun cual fue editado
+    let usdVal, mxnVal;
+    if (state.montoSource === 'usd' && state.montoUsd > 0) {
+      usdVal = state.montoUsd;
+      mxnVal = usdVal * finalRate;
+      state.montoMxn = mxnVal;
+      document.getElementById('montoMxn').value = mxnVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    } else if (state.montoSource === 'mxn' && state.montoMxn > 0) {
+      mxnVal = state.montoMxn;
+      usdVal = mxnVal / finalRate;
+      state.montoUsd = usdVal;
+      document.getElementById('montoUsd').value = usdVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    } else {
+      usdVal = 0;
+      mxnVal = 0;
+    }
+
+    if (usdVal > 0) {
+      document.getElementById('pnlGrid').style.display = 'grid';
+      let clientReceiveAmt, clientGetAmt, providerSpreadCost, yourGain;
+
+      // Costo del proveedor = lo que nos cuesta SU spread en MXN
+      // = USD notional * (diferencia entre providerRate y mid)
+      providerSpreadCost = usdVal * Math.abs(providerRate - mid);
+
+      // Tu margen = lo que ganas por tus propios BPS
+      // = USD notional * (diferencia entre finalRate y providerRate)
+      yourGain = usdVal * Math.abs(finalRate - providerRate);
+
+      if (state.direction === 'buy') {
+        // Cliente compra USD: entrega MXN, recibe USD
+        clientReceiveAmt = mxnVal;                // MXN que nos entrega
+        clientGetAmt = usdVal;                    // USD que recibe
+
+        receiveEl.textContent = '$' + formatMoney(clientReceiveAmt, 2) + ' MXN';
+        getEl.textContent = '$' + formatMoney(clientGetAmt, 2) + ' USD';
+      } else {
+        // Cliente vende USD: entrega USD, recibe MXN
+        clientReceiveAmt = usdVal;                // USD que nos entrega
+        clientGetAmt = mxnVal;                    // MXN que recibe
+
+        receiveEl.textContent = '$' + formatMoney(clientReceiveAmt, 2) + ' USD';
+        getEl.textContent = '$' + formatMoney(clientGetAmt, 2) + ' MXN';
+      }
+
+      document.getElementById('pnlProv').textContent = '$' + formatMoney(providerSpreadCost, 2) + ' MXN';
+      document.getElementById('pnlGain').textContent = '+$' + formatMoney(yourGain, 2) + ' MXN';
+    } else {
+      document.getElementById('pnlGrid').style.display = 'none';
+      receiveEl.textContent = '—';
+      getEl.textContent = '—';
+    }
+  }
+
+  // --- Copy summary (solo info para cliente) ---
+  const STALE_SECONDS = 15;
+
+  function isFxStale(){
+    if (!state.fxTime) return true;
+    const elapsed = (Date.now() - state.fxTime.getTime()) / 1000;
+    return elapsed > STALE_SECONDS;
+  }
+
+  function updateCopyBtnLabel(){
+    const btn = document.getElementById('copyBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const stale = isFxStale() && state.fxTime;
+    if (stale) {
+      btn.textContent = 'Refrescar y copiar';
+      btn.classList.add('stale');
+      refreshBtn.classList.add('stale');
+    } else {
+      btn.textContent = 'Copiar para cliente';
+      btn.classList.remove('stale');
+      refreshBtn.classList.remove('stale');
+    }
+  }
+
+  // Check stale status every second
+  setInterval(updateCopyBtnLabel, 1000);
+
+  async function doCopy(){
+    // funcion legacy - ahora se usa buildClientText + copyTextMobileSafe
+    // dejada para compatibilidad por si algo externo la llama
+  }
+
+  // Construye el texto del mensaje para copiar al cliente
+  function buildClientText(){
+    if (!state.fxMid) return null;
+    const usdVal = state.montoUsd;
+    const mxnVal = state.montoMxn;
+    if (usdVal <= 0 || mxnVal <= 0) return null;
+
+    const totalBps = state.bpsProv + state.bpsCli;
+    const mid = state.fxMid;
+    const adjust = mid * (totalBps / 10000);
+    const finalRate = state.direction === 'buy' ? mid + adjust : mid - adjust;
+    const now = new Date();
+
+    // Recalcular montos con finalRate actualizado
+    let freshUsd = usdVal, freshMxn = mxnVal;
+    if (state.montoSource === 'usd') {
+      freshMxn = freshUsd * finalRate;
+    } else if (state.montoSource === 'mxn') {
+      freshUsd = freshMxn / finalRate;
+    }
+
+    const bold = (s) => '*' + s + '*';
+    const src = state.montoSource;
+
+    let otcMonto, otcUnit, clienteMonto, clienteUnit;
+    let otcBold, clienteBold;
+
+    if (state.direction === 'buy') {
+      otcMonto = formatMoney(freshMxn, 2); otcUnit = 'MXN';
+      clienteMonto = formatMoney(freshUsd, 2); clienteUnit = 'USD';
+      otcBold = (src === 'mxn'); clienteBold = (src === 'usd');
+    } else {
+      otcMonto = formatMoney(freshUsd, 2); otcUnit = 'USD';
+      clienteMonto = formatMoney(freshMxn, 2); clienteUnit = 'MXN';
+      otcBold = (src === 'usd'); clienteBold = (src === 'mxn');
+    }
+
+    const otcStr = `$${otcMonto} ${otcUnit}`;
+    const clienteStr = `$${clienteMonto} ${clienteUnit}`;
+
+    let txt = `Cotización The OTC Desk\n\n`;
+    txt += `Monto que recibe The OTC Desk: ${otcBold ? bold(otcStr) : otcStr}\n`;
+    txt += `Tipo de cambio USD/MXN: $${finalRate.toFixed(4)}\n`;
+    txt += `Monto que recibe el cliente: ${clienteBold ? bold(clienteStr) : clienteStr}\n`;
+    txt += `\n${now.toLocaleString('es-MX')}`;
+    return txt;
+  }
+
+  // Copia usando ClipboardItem con Promise - funciona en Safari iOS despues de await
+  async function copyTextMobileSafe(textPromiseOrString) {
+    // Si es string directo, usar writeText simple
+    if (typeof textPromiseOrString === 'string') {
+      try {
+        await navigator.clipboard.writeText(textPromiseOrString);
+        return true;
+      } catch(e) {
+        return fallbackCopy(textPromiseOrString);
+      }
+    }
+
+    // Si es Promise, usar ClipboardItem (Safari iOS friendly)
+    try {
+      if (typeof ClipboardItem !== 'undefined' && navigator.clipboard.write) {
+        const blobPromise = textPromiseOrString.then(text =>
+          new Blob([text], { type: 'text/plain' })
+        );
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'text/plain': blobPromise })
+        ]);
+        return true;
+      } else {
+        // Fallback: esperar la promesa y usar writeText
+        const text = await textPromiseOrString;
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch(e) {
+      const text = await textPromiseOrString.catch(() => null);
+      if (text) return fallbackCopy(text);
+      return false;
+    }
+  }
+
+  // Fallback: textarea + execCommand (para navegadores viejos)
+  function fallbackCopy(text) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch(e) { return false; }
+  }
+
+  document.getElementById('copyBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('copyBtn');
+
+    if (!state.fxMid) { showToast('Falta tipo de cambio'); return; }
+    if (state.montoUsd <= 0 || state.montoMxn <= 0) { showToast('Falta monto'); return; }
+
+    const stale = isFxStale() && state.fxTime;
+
+    if (stale) {
+      // IMPORTANTE: preparamos una Promise que resolvera con el texto DESPUES del refresh.
+      // Esto mantiene el user gesture context en iOS Safari.
+      btn.textContent = 'Refrescando...';
+      btn.disabled = true;
+
+      const textPromise = (async () => {
+        await fetchFx();
+        return buildClientText() || '';
+      })();
+
+      const ok = await copyTextMobileSafe(textPromise);
+      btn.disabled = false;
+      updateCopyBtnLabel();
+      showToast(ok ? 'Copiado actualizado' : 'Error al copiar');
+    } else {
+      // Copia inmediata sin refresh
+      const txt = buildClientText();
+      if (!txt) { showToast('Falta info'); return; }
+      const ok = await copyTextMobileSafe(txt);
+      showToast(ok ? 'Copiado' : 'Error al copiar');
+    }
+  });
+
+  // --- History ---
+  function loadHistory(){
+    try {
+      const saved = sessionStorage.getItem('bps_history');
+      if (saved) state.history = JSON.parse(saved);
+    } catch(e){}
+    renderHistory();
+  }
+
+  function saveHistory(){
+    try { sessionStorage.setItem('bps_history', JSON.stringify(state.history)); } catch(e){}
+  }
+
+  function renderHistory(){
+    const wrap = document.getElementById('historySection');
+    const list = document.getElementById('histList');
+    if (state.history.length === 0) {
+      wrap.style.display = 'none';
+      return;
+    }
+    wrap.style.display = 'block';
+    list.innerHTML = state.history.slice().reverse().map(h => {
+      const dir = h.direction === 'buy' ? 'USD→MXN' : 'MXN→USD';
+      return `<div class="hist-item">
+        <div class="left">
+          <span class="dir">${dir}</span>
+          <span class="rate">${h.finalRate.toFixed(4)}</span>
+        </div>
+        <div class="right">
+          <span class="bps">${h.totalBps.toFixed(1)} bps</span>
+          <div class="time">${h.time}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    if (!state.fxMid) { showToast('Falta tipo de cambio'); return; }
+    const totalBps = state.bpsProv + state.bpsCli;
+    const mid = state.fxMid;
+    const adjust = mid * (totalBps / 10000);
+    const finalRate = state.direction === 'buy' ? mid + adjust : mid - adjust;
+
+    state.history.push({
+      direction: state.direction,
+      mid: mid,
+      totalBps: totalBps,
+      finalRate: finalRate,
+      montoUsd: state.montoUsd,
+      montoMxn: state.montoMxn,
+      montoSource: state.montoSource,
+      time: new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
+    });
+    if (state.history.length > 10) state.history = state.history.slice(-10);
+    saveHistory();
+    renderHistory();
+    showToast('Guardada');
+  });
+
+  document.getElementById('clearHist').addEventListener('click', () => {
+    state.history = [];
+    saveHistory();
+    renderHistory();
+  });
+
+  // --- Toggle vista interna ---
+  document.getElementById('intToggle').addEventListener('click', () => {
+    const body = document.getElementById('internalBody');
+    const btn = document.getElementById('intToggle');
+    if (body.style.display === 'none') {
+      body.style.display = 'block';
+      btn.textContent = 'ocultar';
+    } else {
+      body.style.display = 'none';
+      btn.textContent = 'mostrar';
+    }
+  });
+
+  // --- Toast ---
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 1800);
+  }
+
+  // --- Init ---
+  document.getElementById('refreshBtn').addEventListener('click', fetchFx);
+  loadHistory();
+  fetchFx();
+})();
+} // fin initApp
+</script>
+</body>
+</html>
