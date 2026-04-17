@@ -414,9 +414,114 @@
   input[type="number"] { -moz-appearance: textfield; }
   input[type="number"]::-webkit-outer-spin-button,
   input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  /* Login gate */
+  .gate {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1000;
+  }
+  .gate-box {
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+  }
+  .gate-brand {
+    font-size: 11px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .gate-title {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    margin-bottom: 6px;
+  }
+  .gate-sub {
+    font-size: 13px;
+    color: var(--text-mute);
+    margin-bottom: 28px;
+  }
+  .gate-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: inherit;
+    letter-spacing: 2px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .gate-input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .gate-input.err {
+    border-color: var(--red);
+    animation: shake 0.3s;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+  .gate-btn {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    color: #000;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 0.3px;
+  }
+  .gate-btn:active { transform: scale(0.98); }
+  .gate-err-msg {
+    color: var(--red);
+    font-size: 12px;
+    margin-top: 10px;
+    min-height: 16px;
+  }
+  .gate-foot {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 24px;
+    letter-spacing: 0.5px;
+  }
+  .gate-foot .week { color: var(--text-mute); }
+  .app-hidden { display: none !important; }
 </style>
 </head>
 <body>
+
+<!-- Login gate -->
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <div class="gate-brand">The OTC Desk</div>
+    <div class="gate-title">BPS Calculator</div>
+    <div class="gate-sub">Acceso restringido</div>
+    <input type="password" class="gate-input" id="gateInput" placeholder="contraseña" autocomplete="off" inputmode="text" />
+    <button class="gate-btn" id="gateBtn">Entrar</button>
+    <div class="gate-err-msg" id="gateErr"></div>
+  </div>
+</div>
+
+<!-- App (oculta hasta que pase el gate) -->
+<div id="app" class="app-hidden">
 
 <div class="header">
   <h1>BPS Calculator</h1>
@@ -604,7 +709,81 @@
 
 <div class="toast" id="toast">Copiado</div>
 
+</div>
+<!-- /app -->
+
 <script>
+// ============================================================
+// SIMPLE PASSWORD GATE
+// Password fijo, case-insensitive. Token expira a los 7 dias.
+// ============================================================
+const PASSWORD = "intention";
+const TOKEN_TTL_DAYS = 7;
+const TOKEN_KEY = "bps_gate_token";
+
+function checkStoredToken() {
+  try {
+    const raw = localStorage.getItem(TOKEN_KEY);
+    if (!raw) return false;
+    const { ts } = JSON.parse(raw);
+    const ageDays = (Date.now() - ts) / (1000 * 60 * 60 * 24);
+    return ageDays <= TOKEN_TTL_DAYS;
+  } catch { return false; }
+}
+
+function saveToken() {
+  localStorage.setItem(TOKEN_KEY, JSON.stringify({ ts: Date.now() }));
+}
+
+function unlockApp() {
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('app').classList.remove('app-hidden');
+  initApp();
+}
+
+function attemptGate(input) {
+  if (input.trim().toLowerCase() === PASSWORD) {
+    saveToken();
+    unlockApp();
+    return true;
+  }
+  return false;
+}
+
+// Auto-unlock si el token sigue valido
+if (checkStoredToken()) {
+  unlockApp();
+} else {
+  const gateInput = document.getElementById('gateInput');
+  const gateBtn = document.getElementById('gateBtn');
+  const gateErr = document.getElementById('gateErr');
+
+  function trySubmit() {
+    const val = gateInput.value;
+    if (!val) return;
+    const ok = attemptGate(val);
+    if (!ok) {
+      gateInput.classList.add('err');
+      gateErr.textContent = 'Contraseña incorrecta';
+      gateInput.value = '';
+      setTimeout(() => {
+        gateInput.classList.remove('err');
+        gateErr.textContent = '';
+      }, 2000);
+    }
+  }
+
+  gateBtn.addEventListener('click', trySubmit);
+  gateInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') trySubmit();
+  });
+  gateInput.focus();
+}
+
+// ============================================================
+// MAIN APP
+// ============================================================
+function initApp() {
 (function(){
   const state = {
     direction: 'sell', // 'sell' = cliente vende USD (USD→MXN), 'buy' = cliente compra USD (MXN→USD)
@@ -1079,6 +1258,7 @@
   loadHistory();
   fetchFx();
 })();
+} // fin initApp
 </script>
 </body>
 </html>
