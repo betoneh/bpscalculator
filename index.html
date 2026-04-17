@@ -77,12 +77,24 @@
   }
   .dir-btn .dir-main { font-size: 13px; font-weight: 600; letter-spacing: 0.2px; }
   .dir-btn .dir-sub { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.6px; }
-  .dir-btn.active {
-    background: var(--accent);
-    color: #000;
-    border-color: var(--accent);
+
+  /* MXN = verde bandera de México (#006847), USD = azul bandera USA (#0A3161) */
+  .dir-btn[data-dir="sell"].active {
+    /* Cliente vende USD, recibe MXN -> verde MX */
+    background: #006847;
+    color: #fff;
+    border-color: #006847;
   }
-  .dir-btn.active .dir-sub { color: #000; opacity: 0.7; }
+  .dir-btn[data-dir="sell"].active .dir-sub { color: #fff; opacity: 0.75; }
+
+  .dir-btn[data-dir="buy"].active {
+    /* Cliente compra USD -> azul USA */
+    background: #0A3161;
+    color: #fff;
+    border-color: #0A3161;
+  }
+  .dir-btn[data-dir="buy"].active .dir-sub { color: #fff; opacity: 0.75; }
+
   .dir-btn:active:not(.active) { background: var(--surface-2); }
 
   /* FX rate card - compacto, una sola linea */
@@ -123,6 +135,16 @@
   .fx-refresh:active { transform: scale(0.92); }
   .fx-refresh svg { width: 13px; height: 13px; }
   .fx-refresh.spinning svg { animation: spin 0.7s linear; }
+  .fx-refresh.stale {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+    animation: pulse-stale 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse-stale {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+    50% { box-shadow: 0 0 0 5px rgba(212, 175, 55, 0); }
+  }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .banxico {
@@ -530,13 +552,13 @@
 
 <!-- Direction toggle -->
 <div class="direction-wrap" role="tablist">
-  <button class="dir-btn active" data-dir="sell" role="tab">
-    <span class="dir-main">USD → MXN</span>
-    <span class="dir-sub">Cliente vende USD</span>
-  </button>
-  <button class="dir-btn" data-dir="buy" role="tab">
+  <button class="dir-btn active" data-dir="buy" role="tab">
     <span class="dir-main">MXN → USD</span>
     <span class="dir-sub">Cliente compra USD</span>
+  </button>
+  <button class="dir-btn" data-dir="sell" role="tab">
+    <span class="dir-main">USD → MXN</span>
+    <span class="dir-sub">Cliente vende USD</span>
   </button>
 </div>
 
@@ -717,9 +739,9 @@
 // SIMPLE PASSWORD GATE
 // Password fijo, case-insensitive. Token expira a los 7 dias.
 // ============================================================
-const PASSWORD = "intention";
+const PASSWORD = "oasis";
 const TOKEN_TTL_DAYS = 7;
-const TOKEN_KEY = "bps_gate_token";
+const TOKEN_KEY = "bps_gate_token_v2";
 
 function checkStoredToken() {
   try {
@@ -786,7 +808,7 @@ if (checkStoredToken()) {
 function initApp() {
 (function(){
   const state = {
-    direction: 'sell', // 'sell' = cliente vende USD (USD→MXN), 'buy' = cliente compra USD (MXN→USD)
+    direction: 'buy', // 'buy' = cliente compra USD (MXN→USD), 'sell' = cliente vende USD (USD→MXN)
     fxMid: null,
     fxSource: '',
     fxTime: null,
@@ -1081,12 +1103,16 @@ function initApp() {
 
   function updateCopyBtnLabel(){
     const btn = document.getElementById('copyBtn');
-    if (isFxStale() && state.fxTime) {
+    const refreshBtn = document.getElementById('refreshBtn');
+    const stale = isFxStale() && state.fxTime;
+    if (stale) {
       btn.textContent = 'Refrescar y copiar';
       btn.classList.add('stale');
+      refreshBtn.classList.add('stale');
     } else {
       btn.textContent = 'Copiar para cliente';
       btn.classList.remove('stale');
+      refreshBtn.classList.remove('stale');
     }
   }
 
