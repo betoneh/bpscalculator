@@ -94,6 +94,29 @@
   }
   .banxico b { color: var(--text-mute); font-weight: 500; }
 
+  /* Provider selector row */
+  .fx-provider-row {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-top: none; border-radius: 0 0 var(--radius) var(--radius);
+    padding: 8px 12px; margin-top: -10px; margin-bottom: 10px;
+  }
+  .fx-provider-row label {
+    font-size: 10px; color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 0.6px; flex-shrink: 0;
+  }
+  .fx-provider-select {
+    flex: 1; background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--text); padding: 6px 28px 6px 10px; border-radius: 6px;
+    font-size: 12px; font-family: inherit; cursor: pointer;
+    -webkit-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+  .fx-provider-select:focus { outline: none; border-color: var(--accent); }
+  .fx-provider-select option { background: var(--surface); color: var(--text); }
+
   .section {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: var(--radius); padding: 10px 12px; margin-bottom: 8px;
@@ -103,6 +126,27 @@
     margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;
   }
   .section-title .hint { color: var(--text-dim); text-transform: none; letter-spacing: 0; font-size: 10px; }
+  .section-title .hint.auto { color: var(--green); display: flex; align-items: center; gap: 3px; }
+  .section-title .hint.manual { color: var(--accent); display: flex; align-items: center; gap: 3px; }
+  .section-title .hint .dot { width: 5px; height: 5px; border-radius: 50%; display: inline-block; }
+  .section-title .hint.auto .dot { background: var(--green); }
+  .section-title .hint.manual .dot { background: var(--accent); }
+  .section-title .resync-btn {
+    background: transparent; border: 1px solid var(--accent); color: var(--accent);
+    padding: 2px 7px; border-radius: 10px; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.5px; font-family: inherit;
+    cursor: pointer; margin-left: 4px;
+  }
+  .section-title .resync-btn:active { transform: scale(0.95); }
+
+  .flow-badge {
+    display: inline-block; font-size: 9px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.6px;
+    padding: 2px 6px; border-radius: 3px; margin-left: 4px;
+  }
+  .flow-badge.otc { background: rgba(74,222,128,0.15); color: var(--green); }
+  .flow-badge.regular { background: rgba(96,165,250,0.15); color: var(--blue); }
+  .flow-badge.payment { background: rgba(212,175,55,0.15); color: var(--accent); }
   .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: end; }
   .input-group label { display: block; font-size: 10px; color: var(--text-mute); margin-bottom: 3px; }
   .input-group input {
@@ -191,6 +235,7 @@
   .hist-item.done { border-color: rgba(74,222,128,0.3); }
   .hist-item.rejected { border-color: rgba(248,113,113,0.3); opacity: 0.65; }
 
+  /* Summary row (siempre visible, tappable para expandir) */
   .hist-summary {
     padding: 10px 12px; cursor: pointer; -webkit-tap-highlight-color: transparent;
     display: flex; align-items: center; gap: 10px;
@@ -222,6 +267,7 @@
   }
   .hist-item.expanded .hist-chevron { transform: rotate(180deg); }
 
+  /* Details (hidden by default) */
   .hist-details {
     display: none;
     border-top: 1px solid var(--border);
@@ -261,6 +307,7 @@
   .hist-status.done { background: rgba(74,222,128,0.15); color: var(--green); }
   .hist-status.rejected { background: rgba(248,113,113,0.12); color: var(--red); }
 
+  /* Status pill shown on the collapsed summary */
   .hist-status-mini {
     font-size: 8px; font-weight: 600; text-transform: uppercase;
     letter-spacing: 0.5px; padding: 2px 6px; border-radius: 8px;
@@ -285,6 +332,7 @@
     background: rgba(248,113,113,0.12); border-color: var(--red); color: var(--red);
   }
 
+  /* Client name input in output card */
   .client-name-row {
     margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
   }
@@ -368,7 +416,10 @@
     </svg>
   </button>
 </div>
-<div class="banxico" id="banxicoRow" style="display:none;"><span>Banxico FIX</span><b id="banxicoRate">—</b></div>
+<div class="fx-provider-row">
+  <label for="fxProvider">Fuente</label>
+  <select id="fxProvider" class="fx-provider-select"></select>
+</div>
 
 <div class="section">
   <div class="section-title"><span>Monto de la operación</span><span class="hint">edita cualquiera</span></div>
@@ -379,7 +430,10 @@
 </div>
 
 <div class="section">
-  <div class="section-title"><span>BPS proveedor de liquidez</span><span class="hint">tu costo</span></div>
+  <div class="section-title">
+    <span>BPS proveedor de liquidez</span>
+    <span class="hint" id="bpsProvStatus">tu costo</span>
+  </div>
   <div class="input-row">
     <div class="input-group"><label>Puntos base</label><input type="text" inputmode="decimal" id="bpsProv" placeholder="0" /></div>
     <div class="input-group"><label>Centavos MXN</label><input type="text" inputmode="decimal" id="centProv" placeholder="0" /></div>
@@ -437,13 +491,14 @@
       <div class="metric-box"><div class="lbl">Ctvs Total</div><div class="val" id="intCtvTotal">—</div></div>
     </div>
     <div class="layer-divider"></div>
-    <div class="layer-header" style="color:var(--red);"><span class="layer-dot" style="background:var(--red);"></span>Proveedor de liquidez</div>
+    <div class="layer-header" style="color:var(--red);"><span class="layer-dot" style="background:var(--red);"></span>Proveedor de liquidez <span class="flow-badge" id="intCapaFlow" style="display:none;"></span></div>
     <div class="metric-grid-3">
       <div class="metric-box"><div class="lbl">TC Proveedor</div><div class="val" id="intTcProv">—</div></div>
       <div class="metric-box"><div class="lbl">BPS Prov.</div><div class="val" id="intBpsProv">—</div></div>
       <div class="metric-box"><div class="lbl">Ctvs Prov.</div><div class="val" id="intCtvProv">—</div></div>
     </div>
-    <div class="output-row" id="provFeeRow" style="display:none;"><span class="k">Costo fee proveedor</span><span class="v" id="intProvFee" style="color:var(--red);font-weight:600;">—</span></div>
+    <div class="output-row" id="capaFixedFeeRow" style="display:none;"><span class="k">Fee fijo Capa</span><span class="v" id="intCapaFixedFee" style="color:var(--red);font-weight:600;">—</span></div>
+    <div class="output-row" id="provFeeRow" style="display:none;"><span class="k">Costo spread proveedor</span><span class="v" id="intProvFee" style="color:var(--red);font-weight:600;">—</span></div>
     <div class="highlight-box red" id="provTotalBox" style="display:none;"><span class="lbl">Total por mandar a proveedor</span><span class="val" id="intProvTotal">—</span></div>
     <div class="layer-divider"></div>
     <div class="layer-header" style="color:var(--green);"><span class="layer-dot" style="background:var(--green);"></span>Nuestro margen</div>
@@ -488,7 +543,8 @@ else {
 
 function initApp() {
 (function(){
-  const state = { direction:'buy', fxMid:null, fxSource:'', fxTime:null, banxico:null, montoUsd:0, montoMxn:0, montoSource:null, bpsProv:0, bpsCli:0, history:[] };
+  const state = { direction:'buy', fxMid:null, fxSource:'', fxTime:null, montoUsd:0, montoMxn:0, montoSource:null, bpsProv:0, bpsCli:0, history:[], capaQuote:null, bpsProvMode:'auto' };
+  // Set de IDs de logs que están expandidos (no persiste, solo sesión actual)
   const expandedLogIds = new Set();
 
   // ══════════════════════════════════════════════════════════
@@ -498,14 +554,17 @@ function initApp() {
   // ══════════════════════════════════════════════════════════
   const SHEETS_WEBHOOK_URL = '';
 
+  // Debounce para updates (evita saturar el webhook con cada tecla del nombre)
   const updateDebounces = new Map();
   function syncToSheets(action, payload){
     if (!SHEETS_WEBHOOK_URL) return;
     const body = JSON.stringify({ action, ...payload });
+    // fire-and-forget con no-cors: Apps Script no manda headers CORS,
+    // con no-cors no podemos leer la respuesta pero la request sí llega.
     fetch(SHEETS_WEBHOOK_URL, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
+      headers: { 'Content-Type': 'text/plain' }, // text/plain evita preflight
       body: body
     }).catch(e => console.warn('[Sheets sync] fallo silencioso:', e));
   }
@@ -528,6 +587,7 @@ function initApp() {
 
   function syncCreate(log){ syncToSheets('create', logToSheetsRow(log)); }
   function syncUpdate(log){
+    // Debounce por id (útil para updates de clientName que disparan con cada tecla)
     const existing = updateDebounces.get(log.id);
     if (existing) clearTimeout(existing);
     const t = setTimeout(() => {
@@ -537,24 +597,182 @@ function initApp() {
     updateDebounces.set(log.id, t);
   }
 
+  // ══════════════════════════════════════════════════════════
+  // CAPA API (capa.fi) - proveedor de tipo de cambio cross-ramp
+  //
+  // 1. Regístrate en https://sandbox.capa.fi (gratis, sin onboarding)
+  // 2. Ve a Settings > Dev Tools y click en "Generate API Key"
+  // 3. Pega la key aquí entre las comillas
+  //
+  // Usa el endpoint cross-ramp (fiat→fiat sin crypto) que devuelve:
+  //   rate, spread (bps que cobra Capa), fixedFee (comisión fija), flow
+  // Actualmente usando SANDBOX (rates simulados, para testing).
+  // Para producción, cambiar CAPA_BASE_URL y generar key nueva en dashboard.capa.fi
+  // ══════════════════════════════════════════════════════════
+  const CAPA_API_KEY = '';
+  const CAPA_BASE_URL = 'https://staging-api.capa.fi'; // sandbox
+  // const CAPA_BASE_URL = 'https://production-api.capa.fi'; // producción
+
+  // Consulta cross-ramp quote. Retorna objeto completo o null si falla.
+  // direction: 'buy' (MXN→USD, cliente compra USD) o 'sell' (USD→MXN, cliente vende USD)
+  // amount: monto en la currency source (si direction es 'buy', source=MXN; si 'sell', source=USD)
+  async function fetchCapaQuote(direction, amount){
+    if (!CAPA_API_KEY) {
+      console.warn('[Capa] API key no configurada');
+      return null;
+    }
+    // Mapeo direction → source/target
+    // buy = cliente compra USD = nosotros convertimos MXN a USD para el cliente = source MXN, target USD
+    // sell = cliente vende USD = nosotros convertimos USD a MXN = source USD, target MXN
+    const sourceCurrency = direction === 'buy' ? 'MXN' : 'USD';
+    const targetCurrency = direction === 'buy' ? 'USD' : 'MXN';
+    // Default: 50,000 USD o su equivalente aproximado en MXN (~$1,000,000)
+    // Para asegurar que desde el default veamos el pricing tier OTC
+    const refAmount = amount && amount > 0 ? amount : (direction === 'buy' ? 1000000 : 50000);
+
+    const params = new URLSearchParams({
+      sourceCurrency,
+      targetCurrency,
+      sourceAmount: String(refAmount)
+    });
+    const url = `${CAPA_BASE_URL}/api/partner/v2/cross-ramp/quotes?${params.toString()}`;
+    try {
+      const r = await fetch(url, { headers: { 'partner-api-key': CAPA_API_KEY } });
+      const data = await r.json();
+      if (!data?.success) {
+        console.warn('[Capa] respuesta no exitosa:', data);
+        return null;
+      }
+      const d = data.data;
+      if (!d?.rate) return null;
+      return {
+        rate: parseFloat(d.rate), // MXN por USD (o USD por MXN si direction es 'buy')
+        spread: d.spread != null ? parseFloat(d.spread) : null, // fracción: 0.005 = 0.5% = 50 bps
+        fixedFee: d.fees?.fixedFee != null ? parseFloat(d.fees.fixedFee) : null,
+        feeCurrency: d.fees?.feeCurrency || null,
+        flow: d.flow || null, // 'REGULAR' | 'OTC' | 'PAYMENT'
+        sourceAmount: d.sourceAmount,
+        targetAmount: d.targetAmount,
+        sourceCurrency: d.sourceCurrency,
+        targetCurrency: d.targetCurrency
+      };
+    } catch(e){
+      console.warn('[Capa] fetch error:', e);
+      return null;
+    }
+  }
+
+  // Normaliza el rate de Capa a MXN/USD (lo que la app espera)
+  // Para direction='sell', source=USD y target=MXN → rate ya viene como MXN/USD
+  // Para direction='buy', source=MXN y target=USD → rate viene como USD/MXN (invertir)
+  function capaRateToMxnPerUsd(quote, direction){
+    if (!quote?.rate) return null;
+    // Si direction es 'sell' (source=USD, target=MXN), el rate es MXN/USD directamente
+    // Si direction es 'buy' (source=MXN, target=USD), el rate es USD/MXN, invertimos
+    return direction === 'buy' ? (1 / quote.rate) : quote.rate;
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // PROVEEDORES DE TIPO DE CAMBIO
+  // Actualmente solo Capa. Para agregar otro, añade un objeto al array con:
+  //   id: identificador único
+  //   name: nombre visible en el dropdown
+  //   fetchRate: función async que devuelve el número MXN por USD (o null si falla)
+  // ══════════════════════════════════════════════════════════
+  const FX_PROVIDERS = [
+    {
+      id: 'capa',
+      name: 'Capa',
+      async fetchRate(){
+        // Para el dropdown genérico, solo pedimos rate con monto default
+        const quote = await fetchCapaQuote(state.direction, null);
+        if (!quote) return null;
+        // Guardamos el quote completo en state para aprovecharlo después
+        state.capaQuote = quote;
+        return capaRateToMxnPerUsd(quote, state.direction);
+      }
+    }
+  ];
+
+  const FX_PROVIDER_KEY = 'bps_fx_provider';
+  function getSelectedProviderId(){
+    const saved = localStorage.getItem(FX_PROVIDER_KEY);
+    if (saved && FX_PROVIDERS.find(p => p.id === saved)) return saved;
+    return FX_PROVIDERS[0].id; // default
+  }
+  function setSelectedProviderId(id){ localStorage.setItem(FX_PROVIDER_KEY, id); }
+
+  function populateProviderDropdown(){
+    const sel = document.getElementById('fxProvider');
+    const currentId = getSelectedProviderId();
+    sel.innerHTML = FX_PROVIDERS.map(p =>
+      `<option value="${p.id}" ${p.id === currentId ? 'selected' : ''}>${p.name}</option>`
+    ).join('');
+    sel.addEventListener('change', () => {
+      setSelectedProviderId(sel.value);
+      fetchFx();
+    });
+  }
+
   async function fetchFx(){
     const btn = document.getElementById('refreshBtn');
     btn.classList.add('spinning');
     document.getElementById('fxSource').textContent = 'actualizando...';
+
+    // Ordenar: empezar con el proveedor seleccionado, después intentar los demás como fallback
+    const selectedId = getSelectedProviderId();
+    const ordered = [
+      ...FX_PROVIDERS.filter(p => p.id === selectedId),
+      ...FX_PROVIDERS.filter(p => p.id !== selectedId)
+    ];
+
     let rate = null, source = '';
-    try { const r = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=MXN'); const data = await r.json(); if (data?.rates?.MXN) { rate = data.rates.MXN; source = 'exchangerate.host'; } } catch(e){}
-    if (!rate) { try { const r = await fetch('https://open.er-api.com/v6/latest/USD'); const data = await r.json(); if (data?.rates?.MXN) { rate = data.rates.MXN; source = 'open.er-api.com'; } } catch(e){} }
-    if (!rate) { try { const r = await fetch('https://api.frankfurter.app/latest?from=USD&to=MXN'); const data = await r.json(); if (data?.rates?.MXN) { rate = data.rates.MXN; source = 'frankfurter.app (ECB)'; } } catch(e){} }
-    if (rate) { state.fxMid = rate; state.fxSource = source; state.fxTime = new Date(); document.getElementById('fxRate').innerHTML = rate.toFixed(4) + '<span class="unit">MXN</span>'; document.getElementById('fxSource').textContent = source; document.getElementById('fxTime').textContent = formatTime(state.fxTime); }
-    else { document.getElementById('fxSource').textContent = 'error de red'; document.getElementById('fxRate').innerHTML = '—<span class="unit">MXN</span>'; }
-    try { const today = new Date(); const endDate = today.toISOString().split('T')[0]; const startDate = new Date(today.getTime()-7*24*60*60*1000).toISOString().split('T')[0]; const r = await fetch(`https://www.banxico.org.mx/SieAPIRest/service/v1/series/SF43718/datos/${startDate}/${endDate}?token=c8ddf5c9c22de4e87ab52d5f3d34e48b2b8a8a2c6d1b6e0e9a4e8e8e8e8e8e8e`); const data = await r.json(); if (data?.bmx?.series?.[0]?.datos) { const datos = data.bmx.series[0].datos; state.banxico = parseFloat(datos[datos.length-1].dato); document.getElementById('banxicoRow').style.display = 'flex'; document.getElementById('banxicoRate').textContent = state.banxico.toFixed(4); } } catch(e){}
+    for (const provider of ordered) {
+      try {
+        const r = await provider.fetchRate();
+        if (r && !isNaN(r)) {
+          rate = r;
+          source = provider.name;
+          if (provider.id !== selectedId) source += ' (fallback)';
+          break;
+        }
+      } catch(e){}
+    }
+
+    if (rate) {
+      state.fxMid = rate; state.fxSource = source; state.fxTime = new Date();
+      document.getElementById('fxRate').innerHTML = rate.toFixed(4) + '<span class="unit">MXN</span>';
+      document.getElementById('fxSource').textContent = source;
+      document.getElementById('fxTime').textContent = formatTime(state.fxTime);
+    } else {
+      document.getElementById('fxSource').textContent = 'error de red';
+      document.getElementById('fxRate').innerHTML = '—<span class="unit">MXN</span>';
+    }
+
+    // Si vino de Capa y el BPS está en modo auto (o nunca se ha tocado), autollenar
+    if (state.capaQuote && (state.bpsProvMode === 'auto' || state.bpsProv === 0)) {
+      applyCapaAutofill();
+    } else {
+      updateBpsProvStatus();
+    }
+
+    // Actualizar badge de flow en desglose interno
+    const flowEl = document.getElementById('intCapaFlow');
+    if (state.capaQuote?.flow) {
+      flowEl.textContent = state.capaQuote.flow;
+      flowEl.className = 'flow-badge ' + state.capaQuote.flow.toLowerCase();
+      flowEl.style.display = 'inline-block';
+    } else {
+      flowEl.style.display = 'none';
+    }
+
     setTimeout(() => btn.classList.remove('spinning'), 700);
     recalc();
   }
 
   function formatTime(d){ return d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
 
-  document.querySelectorAll('.dir-btn').forEach(btn => { btn.addEventListener('click', () => { document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); state.direction = btn.dataset.dir; recalc(); }); });
+  document.querySelectorAll('.dir-btn').forEach(btn => { btn.addEventListener('click', () => { document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); state.direction = btn.dataset.dir; recalc(); recotizeFromCapa(); }); });
 
   function parseNum(v){ if (!v) return 0; const n = parseFloat(String(v).replace(/,/g,'').replace(/[^0-9.\-]/g,'')); return isNaN(n)?0:n; }
   function formatMoney(n,d){ return n.toLocaleString('en-US',{minimumFractionDigits:d??2,maximumFractionDigits:d??2}); }
@@ -566,12 +784,88 @@ function initApp() {
     bpsEl.addEventListener('input',()=>{ if(locking)return; locking=true; const v=parseNum(bpsEl.value); setter(v); centEl.value=state.fxMid?bpsToCent(v).toFixed(4):''; bpsEl.classList.add('highlight'); centEl.classList.remove('highlight'); locking=false; recalc(); });
     centEl.addEventListener('input',()=>{ if(locking)return; locking=true; const v=parseNum(centEl.value); const bps=state.fxMid?centToBps(v):0; setter(bps); bpsEl.value=bps.toFixed(4); centEl.classList.add('highlight'); bpsEl.classList.remove('highlight'); locking=false; recalc(); });
   }
-  bindPair('bpsProv','centProv',v=>state.bpsProv=v);
+  // bpsProv: bindPair estándar + marcar como manual cuando el usuario edita
+  bindPair('bpsProv','centProv',v=>{ state.bpsProv=v; });
+  // Interceptar inputs de bpsProv/centProv para marcar modo manual
+  ['bpsProv','centProv'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      state.bpsProvMode = 'manual';
+      updateBpsProvStatus();
+    });
+  });
   bindPair('bpsCli','centCli',v=>state.bpsCli=v);
 
+  // Aplica el spread de Capa al campo BPS proveedor (modo auto)
+  function applyCapaAutofill(){
+    if (!state.capaQuote || state.capaQuote.spread == null) return;
+    const bps = state.capaQuote.spread * 10000; // fracción → bps
+    state.bpsProv = bps;
+    state.bpsProvMode = 'auto';
+    document.getElementById('bpsProv').value = bps.toFixed(4);
+    document.getElementById('centProv').value = state.fxMid ? bpsToCent(bps).toFixed(4) : '';
+    document.getElementById('bpsProv').classList.remove('highlight');
+    document.getElementById('centProv').classList.remove('highlight');
+    updateBpsProvStatus();
+  }
+
+  function updateBpsProvStatus(){
+    const el = document.getElementById('bpsProvStatus');
+    if (!el) return;
+    if (state.bpsProvMode === 'auto' && state.capaQuote?.spread != null) {
+      el.className = 'hint auto';
+      el.innerHTML = '<span class="dot"></span>auto desde Capa';
+    } else if (state.bpsProvMode === 'manual' && state.capaQuote?.spread != null) {
+      el.className = 'hint manual';
+      el.innerHTML = '<span class="dot"></span>manual<button class="resync-btn" id="resyncBtn">usar Capa</button>';
+      // re-attach listener (el botón se recrea)
+      document.getElementById('resyncBtn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        applyCapaAutofill();
+        recalc();
+      });
+    } else {
+      el.className = 'hint';
+      el.textContent = 'tu costo';
+    }
+  }
+
   function updateMontoDisplay(){ document.getElementById('montoUsd').classList.toggle('highlight',state.montoSource==='usd'); document.getElementById('montoMxn').classList.toggle('highlight',state.montoSource==='mxn'); }
-  document.getElementById('montoUsd').addEventListener('input',e=>{ const val=parseNum(e.target.value); state.montoUsd=val; state.montoSource='usd'; if(val>0)e.target.value=val.toLocaleString('en-US',{maximumFractionDigits:2}); updateMontoDisplay(); recalc(); });
-  document.getElementById('montoMxn').addEventListener('input',e=>{ const val=parseNum(e.target.value); state.montoMxn=val; state.montoSource='mxn'; if(val>0)e.target.value=val.toLocaleString('en-US',{maximumFractionDigits:2}); updateMontoDisplay(); recalc(); });
+
+  // Debounce helper para recotizar a Capa al cambiar monto
+  let recotizeTimer = null;
+  function recotizeFromCapa(){
+    if (recotizeTimer) clearTimeout(recotizeTimer);
+    recotizeTimer = setTimeout(async () => {
+      const selectedId = getSelectedProviderId();
+      if (selectedId !== 'capa' || !CAPA_API_KEY) return;
+      // Determinar el monto en source currency según dirección
+      let amount;
+      if (state.direction === 'buy') {
+        // source=MXN
+        amount = state.montoMxn > 0 ? state.montoMxn : null;
+      } else {
+        // source=USD
+        amount = state.montoUsd > 0 ? state.montoUsd : null;
+      }
+      if (!amount) return;
+      const quote = await fetchCapaQuote(state.direction, amount);
+      if (!quote) return;
+      state.capaQuote = quote;
+      const newRate = capaRateToMxnPerUsd(quote, state.direction);
+      if (newRate && !isNaN(newRate)) {
+        state.fxMid = newRate;
+        state.fxTime = new Date();
+        document.getElementById('fxRate').innerHTML = newRate.toFixed(4) + '<span class="unit">MXN</span>';
+        document.getElementById('fxTime').textContent = formatTime(state.fxTime);
+      }
+      // Si BPS está en modo auto, re-aplicar
+      if (state.bpsProvMode === 'auto') applyCapaAutofill();
+      recalc();
+    }, 600); // 600ms debounce
+  }
+
+  document.getElementById('montoUsd').addEventListener('input',e=>{ const val=parseNum(e.target.value); state.montoUsd=val; state.montoSource='usd'; if(val>0)e.target.value=val.toLocaleString('en-US',{maximumFractionDigits:2}); updateMontoDisplay(); recalc(); recotizeFromCapa(); });
+  document.getElementById('montoMxn').addEventListener('input',e=>{ const val=parseNum(e.target.value); state.montoMxn=val; state.montoSource='mxn'; if(val>0)e.target.value=val.toLocaleString('en-US',{maximumFractionDigits:2}); updateMontoDisplay(); recalc(); recotizeFromCapa(); });
 
   function recalc(){
     const totalBps=state.bpsProv+state.bpsCli, totalCent=bpsToCent(totalBps);
@@ -612,11 +906,19 @@ function initApp() {
       document.getElementById('intProvTotal').textContent = state.direction==='buy' ? '$'+formatMoney(usdVal*providerRate,2)+' MXN' : '$'+formatMoney(mxnVal/providerRate,2)+' USD';
       document.getElementById('marginTotalBox').style.display='flex';
       document.getElementById('intMarginTotal').textContent='+$'+formatMoney(gain,2)+' MXN';
+      // Capa fixed fee (si está disponible)
+      if (state.capaQuote?.fixedFee != null && state.capaQuote.fixedFee > 0) {
+        document.getElementById('capaFixedFeeRow').style.display='flex';
+        document.getElementById('intCapaFixedFee').textContent='−$'+formatMoney(state.capaQuote.fixedFee,2)+' '+(state.capaQuote.feeCurrency || 'MXN');
+      } else {
+        document.getElementById('capaFixedFeeRow').style.display='none';
+      }
     } else {
       receiveEl.textContent='—'; getEl.textContent='—';
       document.getElementById('provFeeRow').style.display='none';
       document.getElementById('provTotalBox').style.display='none';
       document.getElementById('marginTotalBox').style.display='none';
+      document.getElementById('capaFixedFeeRow').style.display='none';
     }
   }
 
@@ -667,13 +969,16 @@ function initApp() {
     if(isFxStale()&&state.fxTime){ label.textContent='Refrescando...'; btn.disabled=true; await fetchFx(); btn.disabled=false; updateWaBtnLabel(); }
     const txt=buildClientText();
     if(!txt){ showToast('Falta info'); return; }
+    // Guardar log automáticamente antes de abrir WhatsApp
     pushLog('wa');
     openWhatsApp(txt);
   });
 
+  // localStorage (persistente entre sesiones)
   const HIST_KEY = 'bps_history_v2';
   function loadHistory(){
     try { const saved=localStorage.getItem(HIST_KEY); if(saved) state.history=JSON.parse(saved); } catch(e){}
+    // migracion: asegurar que todos los logs tengan status e id
     state.history = state.history.map(h => ({
       id: h.id || (Date.now() + Math.random()),
       status: h.status || 'pending',
@@ -684,6 +989,7 @@ function initApp() {
   }
   function saveHistory(){ try { localStorage.setItem(HIST_KEY,JSON.stringify(state.history)); } catch(e){} }
 
+  // Crear un log desde el estado actual. Fuente: 'wa' o 'manual'
   function createLogEntry(source){
     if(!state.fxMid) return null;
     const totalBps=state.bpsProv+state.bpsCli, mid=state.fxMid, adjust=mid*(totalBps/10000);
@@ -740,6 +1046,9 @@ function initApp() {
       const dirLabel = isBuy ? 'Compra USD' : 'Venta USD';
       const isExpanded = expandedLogIds.has(h.id);
 
+      // Calcular montos: recibimos vs enviamos
+      // buy = cliente compra USD → entrega MXN, recibe USD
+      // sell = cliente vende USD → entrega USD, recibe MXN
       const recibimosStr = isBuy
         ? `$${formatMoney(h.montoMxn, 2)} MXN`
         : `$${formatMoney(h.montoUsd, 2)} USD`;
@@ -785,8 +1094,10 @@ function initApp() {
       </div>`;
     }).join('');
 
+    // Toggle expand/collapse al tocar el summary
     list.querySelectorAll('.hist-summary').forEach(el => {
       el.addEventListener('click', (e) => {
+        // Ignorar clicks que vienen de inputs o botones dentro (por si acaso)
         if (e.target.closest('input, button')) return;
         const id = parseFloat(el.dataset.toggle);
         if(expandedLogIds.has(id)) expandedLogIds.delete(id);
@@ -795,6 +1106,7 @@ function initApp() {
       });
     });
 
+    // Status buttons
     list.querySelectorAll('.hist-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -807,6 +1119,7 @@ function initApp() {
       });
     });
 
+    // Name inputs
     list.querySelectorAll('.hist-name-input').forEach(inp => {
       inp.addEventListener('click', e => e.stopPropagation());
       inp.addEventListener('input', () => {
@@ -816,6 +1129,8 @@ function initApp() {
           state.history[idx].clientName = inp.value.trim();
           saveHistory();
           syncUpdate(state.history[idx]);
+          // No re-renderizar inmediatamente para no perder focus
+          // Actualizar el display del cliente en el summary manualmente
           const summaryClient = list.querySelector(`.hist-item[data-id="${id}"] .hist-sum-client`);
           if(summaryClient) {
             if(inp.value.trim()) {
@@ -848,6 +1163,7 @@ function initApp() {
   function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
 
   document.getElementById('refreshBtn').addEventListener('click',fetchFx);
+  populateProviderDropdown();
   loadHistory();
   fetchFx();
 })();
