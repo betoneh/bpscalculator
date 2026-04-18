@@ -69,7 +69,7 @@
   }
   .fx-main { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
   .fx-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.6px; white-space: nowrap; }
-  .fx-rate { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; font-variant-numeric: tabular-nums; line-height: 1; }
+  .fx-rate { font-size: 30px; font-weight: 700; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; line-height: 1; }
   .fx-rate .unit { font-size: 11px; color: var(--text-mute); font-weight: 400; margin-left: 3px; }
   .fx-meta { display: flex; gap: 6px; font-size: 10px; color: var(--text-dim); align-items: center; }
   .fx-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-dim); display: inline-block; }
@@ -86,27 +86,20 @@
   @keyframes pulse-stale { 0%,100%{box-shadow:0 0 0 0 rgba(212,175,55,0.4)} 50%{box-shadow:0 0 0 5px rgba(212,175,55,0)} }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .banxico {
-    font-size: 10px; color: var(--text-dim); padding: 6px 12px;
-    margin-top: -10px; margin-bottom: 10px;
-    background: var(--surface); border: 1px solid var(--border); border-top: none;
-    border-radius: 0 0 var(--radius) var(--radius); display: flex; justify-content: space-between;
+  .fx-tools {
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
   }
-  .banxico b { color: var(--text-mute); font-weight: 500; }
-
-  /* Provider selector row */
-  .fx-provider-row {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-top: none; border-radius: 0 0 var(--radius) var(--radius);
-    padding: 8px 12px; margin-top: -10px; margin-bottom: 10px;
-  }
-  .fx-provider-row label {
+  .fx-provider-row label,
+  .fx-inline-provider label {
     font-size: 10px; color: var(--text-dim); text-transform: uppercase;
     letter-spacing: 0.6px; flex-shrink: 0;
   }
+  .fx-inline-provider {
+    display: flex; align-items: center; gap: 6px;
+  }
   .fx-provider-select {
-    flex: 1; background: var(--surface-2); border: 1px solid var(--border);
+    min-width: 108px; max-width: 140px;
+    background: var(--surface-2); border: 1px solid var(--border);
     color: var(--text); padding: 6px 28px 6px 10px; border-radius: 6px;
     font-size: 12px; font-family: inherit; cursor: pointer;
     -webkit-appearance: none; appearance: none;
@@ -157,6 +150,14 @@
   }
   .input-group input:focus { outline: none; border-color: var(--accent); }
   .input-group input.highlight { border-color: var(--accent); background: rgba(212,175,55,0.05); }
+  .input-group.unit-inside { position: relative; }
+  .input-group.unit-inside input { padding-right: 54px; }
+  .input-unit {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    font-size: 10px; color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 0.5px; pointer-events: none;
+  }
+  .input-row.compact-bps { align-items: stretch; }
 
   .output {
     background: var(--surface); border: 1px solid var(--accent-dim);
@@ -401,31 +402,35 @@
 
 <div class="fx-card">
   <div class="fx-main">
-    <span class="fx-label">USD/MXN</span>
     <span class="fx-rate" id="fxRate">—<span class="unit">MXN</span></span>
     <span class="fx-meta">
-      <span id="fxSource">cargando...</span>
-      <span class="dot"></span>
       <span id="fxTime"></span>
     </span>
   </div>
-  <button class="fx-refresh" id="refreshBtn" aria-label="Refrescar">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/>
-      <path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/>
-    </svg>
-  </button>
-</div>
-<div class="fx-provider-row">
-  <label for="fxProvider">Fuente</label>
-  <select id="fxProvider" class="fx-provider-select"></select>
+  <div class="fx-tools">
+    <div class="fx-inline-provider">
+      <select id="fxProvider" class="fx-provider-select"></select>
+    </div>
+    <button class="fx-refresh" id="refreshBtn" aria-label="Refrescar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/>
+        <path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/>
+      </svg>
+    </button>
+  </div>
 </div>
 
 <div class="section">
   <div class="section-title"><span>Monto de la operación</span><span class="hint">edita cualquiera</span></div>
-  <div class="input-row">
-    <div class="input-group"><label>USD</label><input type="text" inputmode="decimal" id="montoUsd" placeholder="100,000" /></div>
-    <div class="input-group"><label>MXN</label><input type="text" inputmode="decimal" id="montoMxn" placeholder="1,723,645" /></div>
+  <div class="input-row compact-bps">
+    <div class="input-group unit-inside">
+      <input type="text" inputmode="decimal" id="montoUsd" placeholder="100,000" />
+      <span class="input-unit">usd</span>
+    </div>
+    <div class="input-group unit-inside">
+      <input type="text" inputmode="decimal" id="montoMxn" placeholder="1,723,645" />
+      <span class="input-unit">mxn</span>
+    </div>
   </div>
 </div>
 
@@ -434,17 +439,29 @@
     <span>BPS proveedor de liquidez</span>
     <span class="hint" id="bpsProvStatus">tu costo</span>
   </div>
-  <div class="input-row">
-    <div class="input-group"><label>Puntos base</label><input type="text" inputmode="decimal" id="bpsProv" placeholder="0" /></div>
-    <div class="input-group"><label>Centavos MXN</label><input type="text" inputmode="decimal" id="centProv" placeholder="0" /></div>
+  <div class="input-row compact-bps">
+    <div class="input-group unit-inside">
+      <input type="text" inputmode="decimal" id="bpsProv" placeholder="0" />
+      <span class="input-unit">bps</span>
+    </div>
+    <div class="input-group unit-inside">
+      <input type="text" inputmode="decimal" id="centProv" placeholder="0" />
+      <span class="input-unit">ctvs</span>
+    </div>
   </div>
 </div>
 
 <div class="section">
   <div class="section-title"><span>BPS que cobras al cliente</span><span class="hint">tu margen</span></div>
-  <div class="input-row">
-    <div class="input-group"><label>Puntos base</label><input type="text" inputmode="decimal" id="bpsCli" placeholder="0" /></div>
-    <div class="input-group"><label>Centavos MXN</label><input type="text" inputmode="decimal" id="centCli" placeholder="0" /></div>
+  <div class="input-row compact-bps">
+    <div class="input-group unit-inside">
+      <input type="text" inputmode="decimal" id="bpsCli" placeholder="0" />
+      <span class="input-unit">bps</span>
+    </div>
+    <div class="input-group unit-inside">
+      <input type="text" inputmode="decimal" id="centCli" placeholder="0" />
+      <span class="input-unit">ctvs</span>
+    </div>
   </div>
 </div>
 
@@ -456,7 +473,7 @@
     <span class="v" id="clientReceive">—</span>
   </div>
   <div class="output-row">
-    <span class="k">Tipo de cambio USD/MXN</span>
+    <span class="k">TC Cliente USD/MXN</span>
     <span class="v" id="outFinal">—</span>
   </div>
   <div class="output-row hero">
@@ -543,7 +560,7 @@ else {
 
 function initApp() {
 (function(){
-  const state = { direction:'buy', fxMid:null, fxSource:'', fxTime:null, montoUsd:0, montoMxn:0, montoSource:null, bpsProv:0, bpsCli:0, history:[], capaQuote:null, bpsProvMode:'auto' };
+  const state = { direction:'buy', fxMid:null, capaRate:null, fxSource:'', fxTime:null, fxBasisLabel:'', montoUsd:0, montoMxn:0, montoSource:null, bpsProv:0, bpsCli:0, history:[], capaQuote:null, bpsProvMode:'auto', capaError:null };
   // Set de IDs de logs que están expandidos (no persiste, solo sesión actual)
   const expandedLogIds = new Set();
 
@@ -598,78 +615,72 @@ function initApp() {
   }
 
   // ══════════════════════════════════════════════════════════
-  // CAPA API (capa.fi) - proveedor de tipo de cambio cross-ramp
+  // CAPA API - proxy local
   //
-  // 1. Regístrate en https://sandbox.capa.fi (gratis, sin onboarding)
-  // 2. Ve a Settings > Dev Tools y click en "Generate API Key"
-  // 3. Pega la key aquí entre las comillas
-  //
-  // Usa el endpoint cross-ramp (fiat→fiat sin crypto) que devuelve:
-  //   rate, spread (bps que cobra Capa), fixedFee (comisión fija), flow
-  // Actualmente usando SANDBOX (rates simulados, para testing).
-  // Para producción, cambiar CAPA_BASE_URL y generar key nueva en dashboard.capa.fi
+  // La key vive en el servidor (.env) y el frontend solo consulta
+  // un endpoint local para no exponer credenciales en el navegador.
   // ══════════════════════════════════════════════════════════
-  const CAPA_API_KEY = '';
-  const CAPA_BASE_URL = 'https://staging-api.capa.fi'; // sandbox
-  // const CAPA_BASE_URL = 'https://production-api.capa.fi'; // producción
+  const CAPA_PROXY_URL = '/api/capa/fx';
 
   // Consulta cross-ramp quote. Retorna objeto completo o null si falla.
   // direction: 'buy' (MXN→USD, cliente compra USD) o 'sell' (USD→MXN, cliente vende USD)
   // amount: monto en la currency source (si direction es 'buy', source=MXN; si 'sell', source=USD)
-  async function fetchCapaQuote(direction, amount){
-    if (!CAPA_API_KEY) {
-      console.warn('[Capa] API key no configurada');
-      return null;
-    }
-    // Mapeo direction → source/target
-    // buy = cliente compra USD = nosotros convertimos MXN a USD para el cliente = source MXN, target USD
-    // sell = cliente vende USD = nosotros convertimos USD a MXN = source USD, target MXN
-    const sourceCurrency = direction === 'buy' ? 'MXN' : 'USD';
-    const targetCurrency = direction === 'buy' ? 'USD' : 'MXN';
-    // Default: 50,000 USD o su equivalente aproximado en MXN (~$1,000,000)
-    // Para asegurar que desde el default veamos el pricing tier OTC
-    const refAmount = amount && amount > 0 ? amount : (direction === 'buy' ? 1000000 : 50000);
-
-    const params = new URLSearchParams({
-      sourceCurrency,
-      targetCurrency,
-      sourceAmount: String(refAmount)
-    });
-    const url = `${CAPA_BASE_URL}/api/partner/v2/cross-ramp/quotes?${params.toString()}`;
+  async function fetchCapaQuote(direction, amount, amountSide='source'){
     try {
-      const r = await fetch(url, { headers: { 'partner-api-key': CAPA_API_KEY } });
+      const params = new URLSearchParams({ direction });
+      if (amount && amount > 0) params.set('amount', String(amount));
+      if (amountSide) params.set('amountSide', amountSide);
+      const r = await fetch(`${CAPA_PROXY_URL}?${params.toString()}`, {
+        headers: { 'Accept': 'application/json' },
+        cache: 'no-store'
+      });
+      if (!r.ok) {
+        let errorPayload = null;
+        try { errorPayload = await r.json(); } catch(e) {}
+        state.capaError = errorPayload?.errorCode || 'HTTP_ERROR';
+        console.warn('[Capa proxy] HTTP error:', r.status, errorPayload || r.statusText);
+        return null;
+      }
       const data = await r.json();
-      if (!data?.success) {
-        console.warn('[Capa] respuesta no exitosa:', data);
+      state.capaError = null;
+      if (!data?.success || !data?.data?.rate) {
+        console.warn('[Capa proxy] respuesta no exitosa:', data);
         return null;
       }
       const d = data.data;
-      if (!d?.rate) return null;
       return {
-        rate: parseFloat(d.rate), // MXN por USD (o USD por MXN si direction es 'buy')
-        spread: d.spread != null ? parseFloat(d.spread) : null, // fracción: 0.005 = 0.5% = 50 bps
+        rate: parseFloat(d.rate), // MXN por USD
+        spread: d.spread != null ? parseFloat(d.spread) : null,
         fixedFee: d.fees?.fixedFee != null ? parseFloat(d.fees.fixedFee) : null,
         feeCurrency: d.fees?.feeCurrency || null,
-        flow: d.flow || null, // 'REGULAR' | 'OTC' | 'PAYMENT'
+        flow: d.flow || null,
         sourceAmount: d.sourceAmount,
         targetAmount: d.targetAmount,
         sourceCurrency: d.sourceCurrency,
         targetCurrency: d.targetCurrency
       };
     } catch(e){
-      console.warn('[Capa] fetch error:', e);
+      state.capaError = 'NETWORK_ERROR';
+      console.warn('[Capa proxy] fetch error:', e);
       return null;
     }
   }
 
-  // Normaliza el rate de Capa a MXN/USD (lo que la app espera)
-  // Para direction='sell', source=USD y target=MXN → rate ya viene como MXN/USD
-  // Para direction='buy', source=MXN y target=USD → rate viene como USD/MXN (invertir)
+  // El proxy ya devuelve siempre MXN/USD, sin importar la dirección.
   function capaRateToMxnPerUsd(quote, direction){
     if (!quote?.rate) return null;
-    // Si direction es 'sell' (source=USD, target=MXN), el rate es MXN/USD directamente
-    // Si direction es 'buy' (source=MXN, target=USD), el rate es USD/MXN, invertimos
-    return direction === 'buy' ? (1 / quote.rate) : quote.rate;
+    return quote.rate;
+  }
+  function deriveMidFromCapaQuote(quote, direction){
+    const capaRate = capaRateToMxnPerUsd(quote, direction);
+    if (!capaRate || !quote) return null;
+    const spread = quote.spread != null ? Number(quote.spread) : null;
+    if (!spread || spread <= 0) return capaRate;
+    // El quote de Capa ya viene con su spread aplicado.
+    // Descontamos ese spread para obtener el mid interno y evitar duplicarlo.
+    return direction === 'buy'
+      ? (capaRate / (1 + spread))
+      : (capaRate / (1 - spread));
   }
 
   // ══════════════════════════════════════════════════════════
@@ -717,7 +728,6 @@ function initApp() {
   async function fetchFx(){
     const btn = document.getElementById('refreshBtn');
     btn.classList.add('spinning');
-    document.getElementById('fxSource').textContent = 'actualizando...';
 
     // Ordenar: empezar con el proveedor seleccionado, después intentar los demás como fallback
     const selectedId = getSelectedProviderId();
@@ -727,6 +737,7 @@ function initApp() {
     ];
 
     let rate = null, source = '';
+    state.capaQuote = null;
     for (const provider of ordered) {
       try {
         const r = await provider.fetchRate();
@@ -740,13 +751,22 @@ function initApp() {
     }
 
     if (rate) {
-      state.fxMid = rate; state.fxSource = source; state.fxTime = new Date();
+      state.capaRate = rate;
+      state.fxMid = deriveMidFromCapaQuote(state.capaQuote, state.direction) ?? rate;
+      state.fxSource = source; state.fxTime = new Date();
+      state.fxBasisLabel = formatFxBasisLabel(state.capaQuote);
       document.getElementById('fxRate').innerHTML = rate.toFixed(4) + '<span class="unit">MXN</span>';
-      document.getElementById('fxSource').textContent = source;
       document.getElementById('fxTime').textContent = formatTime(state.fxTime);
-    } else {
-      document.getElementById('fxSource').textContent = 'error de red';
+    } else if (state.capaError === 'CAPA_API_KEY_MISSING') {
+      state.capaRate = null;
+      state.fxBasisLabel = '';
       document.getElementById('fxRate').innerHTML = '—<span class="unit">MXN</span>';
+      document.getElementById('fxTime').textContent = '';
+    } else {
+      state.capaRate = null;
+      state.fxBasisLabel = '';
+      document.getElementById('fxRate').innerHTML = '—<span class="unit">MXN</span>';
+      document.getElementById('fxTime').textContent = '';
     }
 
     // Si vino de Capa y el BPS está en modo auto (o nunca se ha tocado), autollenar
@@ -771,8 +791,31 @@ function initApp() {
   }
 
   function formatTime(d){ return d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+  function formatFxBasisLabel(quote){
+    if (!quote) return '';
+    const sourceAmount = Number(quote.sourceAmount);
+    const targetAmount = Number(quote.targetAmount);
+    const sourceCurrency = quote.sourceCurrency || '';
+    const targetCurrency = quote.targetCurrency || '';
 
-  document.querySelectorAll('.dir-btn').forEach(btn => { btn.addEventListener('click', () => { document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); state.direction = btn.dataset.dir; recalc(); recotizeFromCapa(); }); });
+    if (targetCurrency === 'USD' && targetAmount > 0) return `base ${formatMoney(targetAmount,0)} USD`;
+    if (sourceCurrency === 'USD' && sourceAmount > 0) return `base ${formatMoney(sourceAmount,0)} USD`;
+    if (sourceAmount > 0 && sourceCurrency) return `base ${formatMoney(sourceAmount,0)} ${sourceCurrency}`;
+    return '';
+  }
+
+  document.querySelectorAll('.dir-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.direction = btn.dataset.dir;
+
+      // Al cambiar de dirección refrescamos el quote base y,
+      // si ya hay monto capturado, recotizamos con ese monto.
+      await fetchFx();
+      recotizeFromCapa();
+    });
+  });
 
   function parseNum(v){ if (!v) return 0; const n = parseFloat(String(v).replace(/,/g,'').replace(/[^0-9.\-]/g,'')); return isNaN(n)?0:n; }
   function formatMoney(n,d){ return n.toLocaleString('en-US',{minimumFractionDigits:d??2,maximumFractionDigits:d??2}); }
@@ -831,34 +874,48 @@ function initApp() {
 
   function updateMontoDisplay(){ document.getElementById('montoUsd').classList.toggle('highlight',state.montoSource==='usd'); document.getElementById('montoMxn').classList.toggle('highlight',state.montoSource==='mxn'); }
 
-  // Debounce helper para recotizar a Capa al cambiar monto
+  // Debounce helper para recotizar a Capa al cambiar monto.
   let recotizeTimer = null;
   function recotizeFromCapa(){
     if (recotizeTimer) clearTimeout(recotizeTimer);
     recotizeTimer = setTimeout(async () => {
       const selectedId = getSelectedProviderId();
-      if (selectedId !== 'capa' || !CAPA_API_KEY) return;
-      // Determinar el monto en source currency según dirección
+      if (selectedId !== 'capa') return;
       let amount;
+      let amountSide = 'source';
       if (state.direction === 'buy') {
-        // source=MXN
-        amount = state.montoMxn > 0 ? state.montoMxn : null;
+        if (state.montoSource === 'usd') {
+          amount = state.montoUsd > 0 ? state.montoUsd : null;
+          amountSide = 'target';
+        } else {
+          amount = state.montoMxn > 0 ? state.montoMxn : null;
+          amountSide = 'source';
+        }
       } else {
-        // source=USD
-        amount = state.montoUsd > 0 ? state.montoUsd : null;
+        if (state.montoSource === 'mxn') {
+          amount = state.montoMxn > 0 ? state.montoMxn : null;
+          amountSide = 'target';
+        } else {
+          amount = state.montoUsd > 0 ? state.montoUsd : null;
+          amountSide = 'source';
+        }
       }
-      if (!amount) return;
-      const quote = await fetchCapaQuote(state.direction, amount);
+      if (!amount) {
+        await fetchFx();
+        return;
+      }
+      const quote = await fetchCapaQuote(state.direction, amount, amountSide);
       if (!quote) return;
       state.capaQuote = quote;
       const newRate = capaRateToMxnPerUsd(quote, state.direction);
       if (newRate && !isNaN(newRate)) {
-        state.fxMid = newRate;
+        state.capaRate = newRate;
+        state.fxMid = deriveMidFromCapaQuote(quote, state.direction) ?? newRate;
         state.fxTime = new Date();
+        state.fxBasisLabel = formatFxBasisLabel(quote);
         document.getElementById('fxRate').innerHTML = newRate.toFixed(4) + '<span class="unit">MXN</span>';
         document.getElementById('fxTime').textContent = formatTime(state.fxTime);
       }
-      // Si BPS está en modo auto, re-aplicar
       if (state.bpsProvMode === 'auto') applyCapaAutofill();
       recalc();
     }, 600); // 600ms debounce
@@ -868,22 +925,30 @@ function initApp() {
   document.getElementById('montoMxn').addEventListener('input',e=>{ const val=parseNum(e.target.value); state.montoMxn=val; state.montoSource='mxn'; if(val>0)e.target.value=val.toLocaleString('en-US',{maximumFractionDigits:2}); updateMontoDisplay(); recalc(); recotizeFromCapa(); });
 
   function recalc(){
-    const totalBps=state.bpsProv+state.bpsCli, totalCent=bpsToCent(totalBps);
+    const autoProvider = state.bpsProvMode === 'auto' && state.capaRate;
+    const providerRate = autoProvider
+      ? state.capaRate
+      : (state.direction==='buy'
+          ? state.fxMid + (state.fxMid * state.bpsProv / 10000)
+          : state.fxMid - (state.fxMid * state.bpsProv / 10000));
+    const finalRate = state.direction==='buy'
+      ? providerRate + (providerRate * state.bpsCli / 10000)
+      : providerRate - (providerRate * state.bpsCli / 10000);
+    const totalBps = state.bpsProv + state.bpsCli;
+    const totalCent = ((state.direction==='buy' ? finalRate - state.fxMid : state.fxMid - finalRate));
     if(!state.fxMid) return;
-    const mid=state.fxMid, adjust=mid*(totalBps/10000);
-    const finalRate = state.direction==='buy' ? mid+adjust : mid-adjust;
-    const providerRate = state.direction==='buy' ? mid+(mid*state.bpsProv/10000) : mid-(mid*state.bpsProv/10000);
+    const mid=state.fxMid;
 
     document.getElementById('outFinal').textContent = '$'+finalRate.toFixed(4);
     const receiveLbl=document.getElementById('clientReceiveLbl'), getLbl=document.getElementById('clientGetLbl');
     const receiveEl=document.getElementById('clientReceive'), getEl=document.getElementById('clientGet');
-    if(state.direction==='buy'){ receiveLbl.textContent='Monto que recibe The OTC Desk (MXN)'; getLbl.textContent='Monto que recibe el cliente (USD)'; }
-    else { receiveLbl.textContent='Monto que recibe The OTC Desk (USD)'; getLbl.textContent='Monto que recibe el cliente (MXN)'; }
+    if(state.direction==='buy'){ receiveLbl.textContent='Recibe The OTC Desk (MXN)'; getLbl.textContent='Recibe el cliente (USD)'; }
+    else { receiveLbl.textContent='Recibe The OTC Desk (USD)'; getLbl.textContent='Recibe el cliente (MXN)'; }
 
     document.getElementById('intMid').textContent=mid.toFixed(4);
     document.getElementById('intTcCliente').textContent=finalRate.toFixed(4);
     document.getElementById('intBpsTotal').textContent='+'+totalBps.toFixed(2);
-    document.getElementById('intCtvTotal').textContent='+'+totalCent.toFixed(4);
+    document.getElementById('intCtvTotal').textContent='+'+Math.abs(totalCent).toFixed(4);
     document.getElementById('intTcProv').textContent=providerRate.toFixed(4);
     document.getElementById('intBpsProv').textContent='+'+state.bpsProv.toFixed(2);
     document.getElementById('intCtvProv').textContent='+'+bpsToCent(state.bpsProv).toFixed(4);
@@ -937,8 +1002,15 @@ function initApp() {
     if(!state.fxMid) return null;
     const usdVal=state.montoUsd, mxnVal=state.montoMxn;
     if(usdVal<=0||mxnVal<=0) return null;
-    const totalBps=state.bpsProv+state.bpsCli, mid=state.fxMid, adjust=mid*(totalBps/10000);
-    const finalRate = state.direction==='buy' ? mid+adjust : mid-adjust;
+    const autoProvider = state.bpsProvMode === 'auto' && state.capaRate;
+    const providerRate = autoProvider
+      ? state.capaRate
+      : (state.direction==='buy'
+          ? state.fxMid + (state.fxMid * state.bpsProv / 10000)
+          : state.fxMid - (state.fxMid * state.bpsProv / 10000));
+    const finalRate = state.direction==='buy'
+      ? providerRate + (providerRate * state.bpsCli / 10000)
+      : providerRate - (providerRate * state.bpsCli / 10000);
     const now=new Date();
     let freshUsd=usdVal,freshMxn=mxnVal;
     if(state.montoSource==='usd') freshMxn=freshUsd*finalRate;
@@ -992,8 +1064,17 @@ function initApp() {
   // Crear un log desde el estado actual. Fuente: 'wa' o 'manual'
   function createLogEntry(source){
     if(!state.fxMid) return null;
-    const totalBps=state.bpsProv+state.bpsCli, mid=state.fxMid, adjust=mid*(totalBps/10000);
-    const finalRate=state.direction==='buy'?mid+adjust:mid-adjust;
+    const autoProvider = state.bpsProvMode === 'auto' && state.capaRate;
+    const providerRate = autoProvider
+      ? state.capaRate
+      : (state.direction==='buy'
+          ? state.fxMid + (state.fxMid * state.bpsProv / 10000)
+          : state.fxMid - (state.fxMid * state.bpsProv / 10000));
+    const totalBps = autoProvider ? state.bpsCli : (state.bpsProv + state.bpsCli);
+    const finalRate = state.direction==='buy'
+      ? providerRate + (providerRate * state.bpsCli / 10000)
+      : providerRate - (providerRate * state.bpsCli / 10000);
+    const mid = state.fxMid;
     return {
       id: Date.now() + Math.random(),
       direction: state.direction,

@@ -1,0 +1,9 @@
+{
+  "name": "bpscalculator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BPS Calculator con proxy local para Capa",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
