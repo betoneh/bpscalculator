@@ -5,5 +5,8 @@
   "description": "BPS Calculator con proxy local para Capa",
   "scripts": {
     "start": "node server.js"
+  },
+  "dependencies": {
+    "vercel": "^51.8.0"
   }
 }

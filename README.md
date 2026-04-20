@@ -37,6 +37,23 @@ Luego abre:
 http://localhost:3000
 ```
 
+## Deploy en Vercel
+
+La app ya puede desplegarse en Vercel usando una Function en [api/capa/fx.js](/Users/beto/Documents/GitHub/bpscalculator/api/capa/fx.js).
+
+Variables que debes configurar en Vercel:
+
+```env
+CAPA_API_KEY=TU_API_KEY_DE_CAPA
+CAPA_BASE_URL=https://production-api.capa.fi
+```
+
+Archivos relevantes para Vercel:
+
+- [vercel.json](/Users/beto/Documents/GitHub/bpscalculator/vercel.json)
+- [api/capa/fx.js](/Users/beto/Documents/GitHub/bpscalculator/api/capa/fx.js)
+- [index.html](/Users/beto/Documents/GitHub/bpscalculator/index.html)
+
 ### 3. Qué cambió
 
 - El navegador ya no manda `partner-api-key` a Capa.

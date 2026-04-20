@@ -514,6 +514,7 @@
       <div class="metric-box"><div class="lbl">BPS Prov.</div><div class="val" id="intBpsProv">—</div></div>
       <div class="metric-box"><div class="lbl">Ctvs Prov.</div><div class="val" id="intCtvProv">—</div></div>
     </div>
+    <div class="output-row"><span class="k">Capa spread / premium</span><span class="v" id="intCapaSpreadRaw">—</span></div>
     <div class="output-row" id="capaFixedFeeRow" style="display:none;"><span class="k">Fee fijo Capa</span><span class="v" id="intCapaFixedFee" style="color:var(--red);font-weight:600;">—</span></div>
     <div class="output-row" id="provFeeRow" style="display:none;"><span class="k">Costo spread proveedor</span><span class="v" id="intProvFee" style="color:var(--red);font-weight:600;">—</span></div>
     <div class="highlight-box red" id="provTotalBox" style="display:none;"><span class="lbl">Total por mandar a proveedor</span><span class="val" id="intProvTotal">—</span></div>
@@ -952,6 +953,9 @@ function initApp() {
     document.getElementById('intTcProv').textContent=providerRate.toFixed(4);
     document.getElementById('intBpsProv').textContent='+'+state.bpsProv.toFixed(2);
     document.getElementById('intCtvProv').textContent='+'+bpsToCent(state.bpsProv).toFixed(4);
+    const capaSpread = state.capaQuote?.spread != null ? (Number(state.capaQuote.spread) * 10000).toFixed(4) + ' bps' : '—';
+    const capaPremium = state.capaQuote?.premiumSpread != null ? (Number(state.capaQuote.premiumSpread) * 10000).toFixed(4) + ' bps' : '—';
+    document.getElementById('intCapaSpreadRaw').textContent = `${capaSpread} / ${capaPremium}`;
     document.getElementById('intTcClienteMargin').textContent=finalRate.toFixed(4);
     document.getElementById('intBpsNuestro').textContent='+'+state.bpsCli.toFixed(2);
     document.getElementById('intCtvNuestro').textContent='+'+bpsToCent(state.bpsCli).toFixed(4);
