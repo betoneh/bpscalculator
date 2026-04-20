@@ -46,6 +46,7 @@ Variables que debes configurar en Vercel:
 ```env
 CAPA_API_KEY=TU_API_KEY_DE_CAPA
 CAPA_BASE_URL=https://production-api.capa.fi
+BANXICO_TOKEN=TU_TOKEN_DE_BANXICO
 ```
 
 Archivos relevantes para Vercel:

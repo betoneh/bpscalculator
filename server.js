@@ -11,6 +11,7 @@ const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || '127.0.0.1';
 const CAPA_API_KEY = process.env.CAPA_API_KEY || '';
 const CAPA_BASE_URL = process.env.CAPA_BASE_URL || 'https://staging-api.capa.fi';
+const BANXICO_TOKEN = process.env.BANXICO_TOKEN || '';
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -27,6 +28,9 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === 'GET' && url.pathname === '/api/capa/fx') {
       return handleCapaFx(url, res);
+    }
+    if (req.method === 'GET' && url.pathname === '/api/banxico/fix') {
+      return handleBanxicoFix(res);
     }
 
     if (req.method !== 'GET' && req.method !== 'HEAD') {
@@ -165,6 +169,77 @@ async function handleCapaFx(url, res) {
       success: false,
       error: 'Unable to reach Capa',
       errorCode: 'UPSTREAM_UNREACHABLE'
+    });
+  }
+}
+
+async function handleBanxicoFix(res) {
+  if (!BANXICO_TOKEN) {
+    return sendJson(res, 503, {
+      success: false,
+      error: 'BANXICO_TOKEN is not configured',
+      errorCode: 'BANXICO_TOKEN_MISSING'
+    });
+  }
+
+  const upstreamUrl = 'https://www.banxico.org.mx/SieAPIRest/service/v1/series/SF43718/datos/oportuno';
+
+  try {
+    const upstreamResponse = await fetch(upstreamUrl, {
+      headers: {
+        Accept: 'application/json',
+        'Bmx-Token': BANXICO_TOKEN
+      }
+    });
+
+    const text = await upstreamResponse.text();
+    let data = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch (error) {
+      return sendJson(res, 502, {
+        success: false,
+        error: 'Invalid response from Banxico',
+        errorCode: 'BANXICO_INVALID_JSON'
+      });
+    }
+
+    if (!upstreamResponse.ok) {
+      return sendJson(res, upstreamResponse.status, {
+        success: false,
+        error: 'Banxico request failed',
+        errorCode: 'BANXICO_UPSTREAM_ERROR',
+        upstream: data
+      });
+    }
+
+    const serie = data?.bmx?.series?.[0];
+    const dato = serie?.datos?.[0]?.dato;
+    const fecha = serie?.datos?.[0]?.fecha || null;
+    const rate = dato != null ? Number(String(dato).replace(/,/g, '')) : null;
+
+    if (!rate || !Number.isFinite(rate)) {
+      return sendJson(res, 502, {
+        success: false,
+        error: 'Incomplete FIX payload from Banxico',
+        errorCode: 'BANXICO_INVALID_PAYLOAD',
+        upstream: data
+      });
+    }
+
+    return sendJson(res, 200, {
+      success: true,
+      data: {
+        provider: 'Banxico FIX',
+        rate,
+        date: fecha
+      }
+    });
+  } catch (error) {
+    return sendJson(res, 502, {
+      success: false,
+      error: 'Unable to reach Banxico',
+      errorCode: 'BANXICO_UNREACHABLE'
     });
   }
 }
