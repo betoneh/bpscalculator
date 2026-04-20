@@ -517,7 +517,7 @@
   <div id="internalBody">
     <div class="layer-header" style="color:var(--accent);">Resumen de la operación</div>
     <div class="metric-grid-4">
-      <div class="metric-box"><div class="lbl">TC Capa</div><div class="val" id="intMid">—</div></div>
+      <div class="metric-box"><div class="lbl">Base USD/MXN</div><div class="val" id="intMid">—</div></div>
       <div class="metric-box"><div class="lbl">TC Cliente</div><div class="val" id="intTcCliente">—</div></div>
       <div class="metric-box"><div class="lbl">BPS Total</div><div class="val" id="intBpsTotal">—</div></div>
       <div class="metric-box"><div class="lbl">Ctvs Total</div><div class="val" id="intCtvTotal">—</div></div>
@@ -525,7 +525,7 @@
     <div class="layer-divider"></div>
     <div class="layer-header" style="color:var(--red);"><span class="layer-dot" style="background:var(--red);"></span>Proveedor de liquidez <span class="flow-badge" id="intCapaFlow" style="display:none;"></span></div>
     <div class="metric-grid-3">
-      <div class="metric-box"><div class="lbl">TC Proveedor</div><div class="val" id="intTcProv">—</div></div>
+      <div class="metric-box"><div class="lbl">TC Capa</div><div class="val" id="intTcProv">—</div></div>
       <div class="metric-box"><div class="lbl">BPS Prov.</div><div class="val" id="intBpsProv">—</div></div>
       <div class="metric-box"><div class="lbl">Ctvs Prov.</div><div class="val" id="intCtvProv">—</div></div>
     </div>
@@ -705,11 +705,22 @@ function initApp() {
     if (!capaRate || !quote) return null;
     const spread = quote.spread != null ? Number(quote.spread) : null;
     if (!spread || spread <= 0) return capaRate;
-    // El quote de Capa ya viene con su spread aplicado.
-    // Descontamos ese spread para obtener el mid interno y evitar duplicarlo.
     return direction === 'buy'
       ? (capaRate / (1 + spread))
       : (capaRate / (1 - spread));
+  }
+  function getBaseRate(){
+    return state.fxMid || state.capaRate || null;
+  }
+  function renderTopRate(){
+    const displayRate = getBaseRate();
+    if (displayRate) {
+      document.getElementById('fxRate').innerHTML = displayRate.toFixed(4) + '<span class="unit">MXN</span>';
+      document.getElementById('fxTime').textContent = formatTime(state.fxTime);
+      return;
+    }
+    document.getElementById('fxRate').innerHTML = '—<span class="unit">MXN</span>';
+    document.getElementById('fxTime').textContent = '';
   }
 
   // ══════════════════════════════════════════════════════════
@@ -784,18 +795,17 @@ function initApp() {
       state.fxMid = deriveMidFromCapaQuote(state.capaQuote, state.direction) ?? rate;
       state.fxSource = source; state.fxTime = new Date();
       state.fxBasisLabel = formatFxBasisLabel(state.capaQuote);
-      document.getElementById('fxRate').innerHTML = rate.toFixed(4) + '<span class="unit">MXN</span>';
-      document.getElementById('fxTime').textContent = formatTime(state.fxTime);
+      renderTopRate();
     } else if (state.capaError === 'CAPA_API_KEY_MISSING') {
       state.capaRate = null;
+      state.fxMid = null;
       state.fxBasisLabel = '';
-      document.getElementById('fxRate').innerHTML = '—<span class="unit">MXN</span>';
-      document.getElementById('fxTime').textContent = '';
+      renderTopRate();
     } else {
       state.capaRate = null;
+      state.fxMid = null;
       state.fxBasisLabel = '';
-      document.getElementById('fxRate').innerHTML = '—<span class="unit">MXN</span>';
-      document.getElementById('fxTime').textContent = '';
+      renderTopRate();
     }
 
     const ref = await fetchBanxicoFix();
@@ -859,13 +869,13 @@ function initApp() {
 
   function parseNum(v){ if (!v) return 0; const n = parseFloat(String(v).replace(/,/g,'').replace(/[^0-9.\-]/g,'')); return isNaN(n)?0:n; }
   function formatMoney(n,d){ return n.toLocaleString('en-US',{minimumFractionDigits:d??2,maximumFractionDigits:d??2}); }
-  function bpsToCent(bps){ return state.fxMid ? bps*state.fxMid*0.01 : 0; }
-  function centToBps(cent){ return state.fxMid ? cent/(state.fxMid*0.01) : 0; }
+  function bpsToCent(bps){ const baseRate = getBaseRate(); return baseRate ? bps*baseRate*0.01 : 0; }
+  function centToBps(cent){ const baseRate = getBaseRate(); return baseRate ? cent/(baseRate*0.01) : 0; }
 
   function bindPair(bpsId,centId,setter){
     const bpsEl=document.getElementById(bpsId), centEl=document.getElementById(centId); let locking=false;
-    bpsEl.addEventListener('input',()=>{ if(locking)return; locking=true; const v=parseNum(bpsEl.value); setter(v); centEl.value=state.fxMid?bpsToCent(v).toFixed(4):''; bpsEl.classList.add('highlight'); centEl.classList.remove('highlight'); locking=false; recalc(); });
-    centEl.addEventListener('input',()=>{ if(locking)return; locking=true; const v=parseNum(centEl.value); const bps=state.fxMid?centToBps(v):0; setter(bps); bpsEl.value=bps.toFixed(4); centEl.classList.add('highlight'); bpsEl.classList.remove('highlight'); locking=false; recalc(); });
+    bpsEl.addEventListener('input',()=>{ if(locking)return; locking=true; const v=parseNum(bpsEl.value); setter(v); centEl.value=getBaseRate()?bpsToCent(v).toFixed(4):''; bpsEl.classList.add('highlight'); centEl.classList.remove('highlight'); locking=false; recalc(); });
+    centEl.addEventListener('input',()=>{ if(locking)return; locking=true; const v=parseNum(centEl.value); const bps=getBaseRate()?centToBps(v):0; setter(bps); bpsEl.value=bps.toFixed(4); centEl.classList.add('highlight'); bpsEl.classList.remove('highlight'); locking=false; recalc(); });
   }
   // bpsProv: bindPair estándar + marcar como manual cuando el usuario edita
   bindPair('bpsProv','centProv',v=>{ state.bpsProv=v; });
@@ -885,7 +895,7 @@ function initApp() {
     state.bpsProv = bps;
     state.bpsProvMode = 'auto';
     document.getElementById('bpsProv').value = bps.toFixed(4);
-    document.getElementById('centProv').value = state.fxMid ? bpsToCent(bps).toFixed(4) : '';
+    document.getElementById('centProv').value = getBaseRate() ? bpsToCent(bps).toFixed(4) : '';
     document.getElementById('bpsProv').classList.remove('highlight');
     document.getElementById('centProv').classList.remove('highlight');
     updateBpsProvStatus();
@@ -953,8 +963,7 @@ function initApp() {
         state.fxMid = deriveMidFromCapaQuote(quote, state.direction) ?? newRate;
         state.fxTime = new Date();
         state.fxBasisLabel = formatFxBasisLabel(quote);
-        document.getElementById('fxRate').innerHTML = newRate.toFixed(4) + '<span class="unit">MXN</span>';
-        document.getElementById('fxTime').textContent = formatTime(state.fxTime);
+        renderTopRate();
       }
       if (state.bpsProvMode === 'auto') applyCapaAutofill();
       recalc();
@@ -965,19 +974,20 @@ function initApp() {
   document.getElementById('montoMxn').addEventListener('input',e=>{ const val=parseNum(e.target.value); state.montoMxn=val; state.montoSource='mxn'; if(val>0)e.target.value=val.toLocaleString('en-US',{maximumFractionDigits:2}); updateMontoDisplay(); recalc(); recotizeFromCapa(); });
 
   function recalc(){
+    const baseRate = getBaseRate();
+    if(!baseRate) return;
     const autoProvider = state.bpsProvMode === 'auto' && state.capaRate;
     const providerRate = autoProvider
       ? state.capaRate
       : (state.direction==='buy'
-          ? state.fxMid + (state.fxMid * state.bpsProv / 10000)
-          : state.fxMid - (state.fxMid * state.bpsProv / 10000));
+          ? baseRate + (baseRate * state.bpsProv / 10000)
+          : baseRate - (baseRate * state.bpsProv / 10000));
     const finalRate = state.direction==='buy'
       ? providerRate + (providerRate * state.bpsCli / 10000)
       : providerRate - (providerRate * state.bpsCli / 10000);
     const totalBps = state.bpsProv + state.bpsCli;
-    const totalCent = ((state.direction==='buy' ? finalRate - state.fxMid : state.fxMid - finalRate));
-    if(!state.fxMid) return;
-    const mid=state.fxMid;
+    const totalCent = ((state.direction==='buy' ? finalRate - baseRate : baseRate - finalRate));
+    const mid=baseRate;
 
     document.getElementById('outFinal').textContent = '$'+finalRate.toFixed(4);
     const receiveLbl=document.getElementById('clientReceiveLbl'), getLbl=document.getElementById('clientGetLbl');
@@ -1039,15 +1049,16 @@ function initApp() {
   setInterval(updateWaBtnLabel,1000);
 
   function buildClientText(){
-    if(!state.fxMid) return null;
+    const baseRate = getBaseRate();
+    if(!baseRate) return null;
     const usdVal=state.montoUsd, mxnVal=state.montoMxn;
     if(usdVal<=0||mxnVal<=0) return null;
     const autoProvider = state.bpsProvMode === 'auto' && state.capaRate;
     const providerRate = autoProvider
       ? state.capaRate
       : (state.direction==='buy'
-          ? state.fxMid + (state.fxMid * state.bpsProv / 10000)
-          : state.fxMid - (state.fxMid * state.bpsProv / 10000));
+          ? baseRate + (baseRate * state.bpsProv / 10000)
+          : baseRate - (baseRate * state.bpsProv / 10000));
     const finalRate = state.direction==='buy'
       ? providerRate + (providerRate * state.bpsCli / 10000)
       : providerRate - (providerRate * state.bpsCli / 10000);
@@ -1076,7 +1087,7 @@ function initApp() {
 
   document.getElementById('waBtn').addEventListener('click', async ()=>{
     const btn=document.getElementById('waBtn'), label=document.getElementById('waBtnLabel');
-    if(!state.fxMid){ showToast('Falta tipo de cambio'); return; }
+    if(!getBaseRate()){ showToast('Falta tipo de cambio'); return; }
     if(state.montoUsd<=0||state.montoMxn<=0){ showToast('Falta monto'); return; }
     if(isFxStale()&&state.fxTime){ label.textContent='Refrescando...'; btn.disabled=true; await fetchFx(); btn.disabled=false; updateWaBtnLabel(); }
     const txt=buildClientText();
@@ -1103,18 +1114,19 @@ function initApp() {
 
   // Crear un log desde el estado actual. Fuente: 'wa' o 'manual'
   function createLogEntry(source){
-    if(!state.fxMid) return null;
+    const baseRate = getBaseRate();
+    if(!baseRate) return null;
     const autoProvider = state.bpsProvMode === 'auto' && state.capaRate;
     const providerRate = autoProvider
       ? state.capaRate
       : (state.direction==='buy'
-          ? state.fxMid + (state.fxMid * state.bpsProv / 10000)
-          : state.fxMid - (state.fxMid * state.bpsProv / 10000));
-    const totalBps = autoProvider ? state.bpsCli : (state.bpsProv + state.bpsCli);
+          ? baseRate + (baseRate * state.bpsProv / 10000)
+          : baseRate - (baseRate * state.bpsProv / 10000));
+    const totalBps = state.bpsProv + state.bpsCli;
     const finalRate = state.direction==='buy'
       ? providerRate + (providerRate * state.bpsCli / 10000)
       : providerRate - (providerRate * state.bpsCli / 10000);
-    const mid = state.fxMid;
+    const mid = baseRate;
     return {
       id: Date.now() + Math.random(),
       direction: state.direction,
@@ -1268,7 +1280,7 @@ function initApp() {
   }
 
   document.getElementById('saveBtn').addEventListener('click',()=>{
-    if(!state.fxMid){showToast('Falta tipo de cambio');return;}
+    if(!getBaseRate()){showToast('Falta tipo de cambio');return;}
     const entry = pushLog('manual');
     if(entry) showToast('Guardada');
   });
