@@ -252,10 +252,15 @@ function serveStatic(requestPath, res, method) {
     return sendText(res, 403, 'Forbidden');
   }
 
-  const filePath = safePath === '/' ? path.join(ROOT, 'index.html') : path.join(ROOT, safePath.slice(1));
+  let filePath = safePath === '/' ? path.join(ROOT, 'index.html') : path.join(ROOT, safePath.slice(1));
 
   if (!filePath.startsWith(ROOT + path.sep) && filePath !== path.join(ROOT, 'index.html')) {
     return sendText(res, 403, 'Forbidden');
+  }
+
+  if (!path.extname(filePath)) {
+    const htmlPath = `${filePath}.html`;
+    if (fs.existsSync(htmlPath)) filePath = htmlPath;
   }
 
   if (path.basename(filePath).startsWith('.env')) {
