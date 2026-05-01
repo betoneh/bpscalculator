@@ -304,7 +304,7 @@
         </div>
         <div class="control" data-key="clientName">
           <label>Cliente</label>
-          <input type="text" />
+          <input type="text" autocapitalize="characters" spellcheck="false" />
         </div>
         <div class="control" data-key="deposit">
           <label>Depósito</label>
@@ -378,11 +378,31 @@
     let logoDataUrl = '';
     let currentSvg = '';
 
+    function uppercaseClientName(value){
+      return String(value || '').toLocaleUpperCase('es-MX');
+    }
+
+    function normalizeClientName(value){
+      return uppercaseClientName(value).trim();
+    }
+
+    function enforceUppercaseInput(input){
+      const value = input.value || '';
+      const upper = uppercaseClientName(value);
+      if (value === upper) return;
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      input.value = upper;
+      if (start != null && end != null) input.setSelectionRange(start, end);
+    }
+
     function loadPreset(){
       try {
-        return { ...defaults, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') };
+        const preset = { ...defaults, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') };
+        preset.clientName = normalizeClientName(preset.clientName || defaults.clientName);
+        return preset;
       } catch (error) {
-        return { ...defaults };
+        return { ...defaults, clientName: normalizeClientName(defaults.clientName) };
       }
     }
 
@@ -523,6 +543,7 @@
       inputs.forEach((input) => {
         input.value = state[key];
         input.addEventListener('input', () => {
+          if (key === 'clientName') enforceUppercaseInput(input);
           const value = input.type === 'number' || input.type === 'range' ? Number(input.value) : input.value;
           state[key] = value;
           inputs.forEach((other) => {
