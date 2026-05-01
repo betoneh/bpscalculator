@@ -996,6 +996,7 @@ function initApp() {
     setTimeout(() => btn.classList.remove('spinning'), 700);
     syncCentFieldsFromBps();
     recalc();
+    updateRefreshButtonState();
   }
 
   function formatTime(d){ return d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
@@ -1049,6 +1050,7 @@ function initApp() {
     else document.getElementById('fxTime').textContent = 'manual';
     syncCentFieldsFromBps();
     recalc();
+    updateRefreshButtonState();
   }
 
   document.getElementById('fxRateInput').addEventListener('input', e => {
@@ -1159,6 +1161,7 @@ function initApp() {
       updateBpsProvStatus();
       syncCentFieldsFromBps();
       recalc();
+      updateRefreshButtonState();
     }, 600); // 600ms debounce
   }
 
@@ -1229,13 +1232,22 @@ function initApp() {
     }
   }
 
+  const STALE_SECONDS = 15;
+  function updateRefreshButtonState(){
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (!refreshBtn) return;
+    const manualRate = state.fxMode === 'manual' && !!state.fxManualRate;
+    const apiStale = state.fxMode === 'api' && state.fxTime && (Date.now() - state.fxTime.getTime()) / 1000 > STALE_SECONDS;
+    refreshBtn.classList.toggle('stale', !!(manualRate || apiStale));
+  }
   function updateWaBtnLabel(){
-    const btn=document.getElementById('waBtn'), label=document.getElementById('waBtnLabel'), refreshBtn=document.getElementById('refreshBtn');
+    const btn=document.getElementById('waBtn'), label=document.getElementById('waBtnLabel');
     label.textContent='Copy to Clipboard';
     btn.classList.remove('stale');
-    refreshBtn.classList.remove('stale');
   }
   updateWaBtnLabel();
+  updateRefreshButtonState();
+  setInterval(updateRefreshButtonState,1000);
 
   function buildClientText(){
     const baseRate = getBaseRate();
