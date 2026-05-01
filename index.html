@@ -1566,7 +1566,7 @@ function initApp() {
     const contentRight = ticketX + ticketWidth - 64;
     const mono = "'SFMono-Regular','Menlo','Monaco','Consolas','Liberation Mono','Courier New',monospace";
     const sans = "'Roboto Condensed','Arial Narrow',Arial,sans-serif";
-    const brandGreen = '#043c2a';
+    const receiptBg = '#888952';
     const ink = '#141414';
     const muted = '#4c4a45';
     const label = '#5d5a54';
@@ -1635,7 +1635,7 @@ function initApp() {
     const logoHref = escape(receiptLogoDataUrl);
     return `
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${canvasWidth}" height="${canvasHeight}" viewBox="0 0 ${canvasWidth} ${canvasHeight}">
-  <rect width="${canvasWidth}" height="${canvasHeight}" fill="${brandGreen}"/>
+  <rect width="${canvasWidth}" height="${canvasHeight}" fill="${receiptBg}"/>
   <rect x="${ticketX}" y="${ticketY}" width="${ticketWidth}" height="${ticketHeight}" fill="${paper}"/>
   <polygon points="${zigzagPoints}" fill="${paper}"/>
   <image href="${logoHref}" xlink:href="${logoHref}" x="${logoX}" y="${ticketY + 130}" width="${logoWidth}" height="${logoHeight}" preserveAspectRatio="xMidYMid meet"/>
@@ -1678,7 +1678,7 @@ function initApp() {
     const contentRight = ticketX + ticketWidth - 64;
     const mono = 'SFMono-Regular, Menlo, Monaco, Consolas, monospace';
     const sans = 'Roboto Condensed, Arial Narrow, Arial, sans-serif';
-    const brandGreen = '#043c2a';
+    const receiptBg = '#888952';
     const ink = '#141414';
     const muted = '#4c4a45';
     const label = '#5d5a54';
@@ -1750,7 +1750,7 @@ function initApp() {
       text(rightText, contentRight, y, { fill: ink, size: rightSize, weight: rightWeight, align: 'right' });
     };
 
-    ctx.fillStyle = brandGreen;
+    ctx.fillStyle = receiptBg;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     ctx.fillStyle = paper;
     ctx.fillRect(ticketX, ticketY, ticketWidth, ticketHeight);
