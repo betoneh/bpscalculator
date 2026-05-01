@@ -39,11 +39,30 @@
   body { padding: 12px; padding-bottom: 40px; max-width: 520px; margin: 0 auto; }
 
   .header {
-    display: flex; align-items: baseline; justify-content: space-between;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
     margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
   }
+  .header-title { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
   .header h1 { font-size: 16px; font-weight: 600; letter-spacing: -0.3px; }
   .header .sub { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; }
+  .settings-link {
+    flex-shrink: 0;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text-mute);
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+    letter-spacing: 0.2px;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  }
+  .settings-link:active {
+    background: var(--surface-2);
+    border-color: var(--accent-dim);
+    color: var(--text);
+  }
 
   .direction-wrap {
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
@@ -402,7 +421,7 @@
   }
   .receipt-modal.show { display: flex; }
   .receipt-sheet {
-    width: min(920px, 100%); max-height: 92vh; overflow: auto;
+    width: min(780px, 100%); max-height: 94vh; overflow: auto;
     background: #121a24; border: 1px solid #223042; border-radius: 24px; padding: 16px;
   }
   .receipt-actions {
@@ -418,9 +437,11 @@
   }
   .receipt-preview {
     background: #0b1119; border-radius: 18px; padding: 12px;
+    display: flex; justify-content: center; align-items: center;
   }
   .receipt-preview img {
-    width: 100%; height: auto; display: block; border-radius: 14px;
+    width: auto; max-width: 100%; max-height: 76vh; display: block; border-radius: 14px;
+    object-fit: contain;
   }
 
   /* Client name input in output card */
@@ -475,8 +496,11 @@
 <div id="app" class="app-hidden">
 
 <div class="header">
-  <h1>BPS Calculator</h1>
-  <span class="sub">The OTC Desk</span>
+  <div class="header-title">
+    <h1>BPS Calculator</h1>
+    <span class="sub">The OTC Desk</span>
+  </div>
+  <a class="settings-link" href="/settings.html">Settings</a>
 </div>
 
 <div class="direction-wrap" role="tablist">
@@ -674,6 +698,7 @@ function initApp() {
   const editingLogIds = new Set();
   let currentReceiptSvg = '';
   let currentReceiptDataUrl = '';
+  let receiptLogoDataUrl = '';
 
   // ══════════════════════════════════════════════════════════
   // GOOGLE SHEETS SYNC
@@ -1306,9 +1331,15 @@ function initApp() {
         ? `$${formatMoney(h.montoUsd, 2)} USD`
         : `$${formatMoney(h.montoMxn, 2)} MXN`,
       clientName: h.clientName || 'SIN NOMBRE',
-      clabeLast4: (h.clabeLast4 || '—').slice(-4),
-      timestamp: getHistoryDisplayDate(h)
+      clabeLast4: formatMaskedLast4(h.clabeLast4),
+      timestamp: formatReceiptDate(h),
+      status: h.status || 'pending'
     };
+  }
+
+  function formatMaskedLast4(value){
+    const digits = String(value || '').replace(/\D/g, '').slice(-4);
+    return digits ? `***${digits}` : '—';
   }
 
   function formatHistoryAmountInput(value){
@@ -1386,47 +1417,167 @@ function initApp() {
     return h.time || '';
   }
 
+  function formatReceiptDate(h){
+    const weekdays = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+    const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const receiptDate = buildReceiptDateObject(h);
+    if (!receiptDate) return '';
+    const hour24 = receiptDate.getHours();
+    const hour12 = hour24 % 12 || 12;
+    const minutes = String(receiptDate.getMinutes()).padStart(2, '0');
+    const seconds = String(receiptDate.getSeconds()).padStart(2, '0');
+    const ampm = hour24 >= 12 ? 'PM' : 'AM';
+    return `${weekdays[receiptDate.getDay()]}, ${months[receiptDate.getMonth()]} ${receiptDate.getDate()}, ${receiptDate.getFullYear()} · ${hour12}:${minutes}:${seconds} ${ampm}`;
+  }
+
+  function buildReceiptDateObject(h){
+    let receiptDate = h.timestamp ? new Date(h.timestamp) : null;
+    if (h.date) {
+      const normalizedDate = normalizeHistoryDate(h.date);
+      const match = normalizedDate.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (match) {
+        const base = receiptDate || new Date();
+        receiptDate = new Date(
+          Number(match[3]),
+          Number(match[2]) - 1,
+          Number(match[1]),
+          base.getHours(),
+          base.getMinutes(),
+          base.getSeconds()
+        );
+      }
+    }
+    if (receiptDate && h.time) {
+      const timeMatch = String(h.time).match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+      if (timeMatch) {
+        receiptDate.setHours(Number(timeMatch[1]), Number(timeMatch[2]), Number(timeMatch[3] || receiptDate.getSeconds()), 0);
+      }
+    }
+    return receiptDate;
+  }
+
+  async function ensureReceiptLogoDataUrl(){
+    if (receiptLogoDataUrl) return receiptLogoDataUrl;
+    const logoUrl = new URL('assets/logo.png', window.location.href);
+    const response = await fetch(logoUrl.href, { cache: 'no-store' });
+    if (!response.ok) throw new Error('No se pudo cargar el logo del recibo');
+    const blob = await response.blob();
+    receiptLogoDataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(new Error('No se pudo leer el logo del recibo'));
+      reader.readAsDataURL(blob);
+    });
+    return receiptLogoDataUrl;
+  }
+
   function buildReceiptSvg(model){
-    const rows = [
-      ['TIPO DE CAMBIO USD/MXN', model.rate],
-      ['DEPÓSITO', model.deposit],
-      ['RECIBE CLIENTE', model.receive],
-      ['NOMBRE DEL CLIENTE', model.clientName],
-      ['ÚLTIMOS 4 NÚMEROS DE CUENTA CLABE', model.clabeLast4]
-    ];
-    const canvasWidth = 1200;
-    const canvasHeight = 870;
-    const frameX = 72;
-    const frameY = 74;
-    const frameWidth = 1056;
-    const frameHeight = 721;
-    const contentX = 108;
-    const contentRight = 1092;
-    const rowStartY = 238;
-    const rowGap = 104;
+    const canvasWidth = 1080;
+    const canvasHeight = 1650;
+    const ticketWidth = 780;
+    const ticketHeight = 1150;
+    const ticketX = (canvasWidth - ticketWidth) / 2;
+    const ticketY = 145;
+    const contentX = ticketX + 64;
+    const contentRight = ticketX + ticketWidth - 64;
+    const mono = "'SFMono-Regular','Menlo','Monaco','Consolas','Liberation Mono','Courier New',monospace";
+    const sans = "'Roboto Condensed','Arial Narrow',Arial,sans-serif";
+    const brandGreen = '#043c2a';
+    const ink = '#141414';
+    const muted = '#4c4a45';
+    const label = '#5d5a54';
+    const paper = '#fffefa';
+    const dividerColor = '#cbc6bb';
     const escape = (value) => String(value)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
+    const wrapRight = (value, max = 24) => {
+      const raw = String(value || '').trim() || 'SIN NOMBRE';
+      if (raw.length <= max) return [raw];
+      const words = raw.split(/\s+/);
+      const lines = [];
+      let current = '';
+      words.forEach(word => {
+        const candidate = current ? `${current} ${word}` : word;
+        if (candidate.length > max && current) {
+          lines.push(current);
+          current = word;
+        } else {
+          current = candidate;
+        }
+      });
+      if (current) lines.push(current);
+      return lines.slice(0, 2);
+    };
+    const clientLines = wrapRight(model.clientName, 26);
+    const zigzagCount = 18;
+    const zigzagStep = ticketWidth / zigzagCount;
+    const zigzagDepth = 22;
+    const zigzagOverlap = 2;
+    const zigzagPoints = Array.from({ length: zigzagCount }, (_, i) => {
+      const startX = ticketX + i * zigzagStep;
+      const midX = startX + zigzagStep / 2;
+      const endX = startX + zigzagStep;
+      return `${startX},${ticketY + ticketHeight - zigzagOverlap} ${midX},${ticketY + ticketHeight + zigzagDepth} ${endX},${ticketY + ticketHeight - zigzagOverlap}`;
+    }).join(' ');
+    const logoWidth = 304;
+    const logoHeight = logoWidth * (140 / 888);
+    const logoX = (canvasWidth - logoWidth) / 2;
+    const dateY = ticketY + 408;
+    const titleY = ticketY + 342;
+    const baseY = ticketY + 520;
+    const rowGap = 64;
+    const bodySize = 21;
+    const rateSize = 32;
+    const dividerOffset = rowGap / 2;
+    const statusText = model.status === 'done' ? 'COMPLETADO' : model.status === 'rejected' ? 'RECHAZADO' : 'PENDIENTE';
+    const rowY = (index) => baseY + rowGap * index;
+    const separatorY = (index) => baseY + rowGap * index + dividerOffset;
+    const clientLineGap = 26;
+    const clientTopY = separatorY(3);
+    const clientExtraHeight = Math.max(0, clientLines.length - 1) * clientLineGap;
+    const clientSeparatorY = clientTopY + rowGap + clientExtraHeight;
+    const clientBlockCenterY = (clientTopY + clientSeparatorY) / 2;
+    const walletCenterY = clientSeparatorY + dividerOffset;
+    const walletSeparatorY = clientSeparatorY + rowGap;
+
+    const leftRightRow = (y, leftText, rightText, rightSize = bodySize, leftSize = bodySize, rightWeight = 400) => `
+  <text x="${contentX}" y="${y}" dominant-baseline="middle" fill="${label}" font-size="${leftSize}" font-family="${mono}" font-weight="400">${escape(leftText)}</text>
+  <text x="${contentRight}" y="${y}" dominant-baseline="middle" text-anchor="end" fill="${ink}" font-size="${rightSize}" font-family="${mono}" font-weight="${rightWeight}">${escape(rightText)}</text>`;
+    const divider = (y) => `<line x1="${contentX}" y1="${y}" x2="${contentRight}" y2="${y}" stroke="${dividerColor}" stroke-width="1.2"/>`;
 
     return `
 <svg xmlns="http://www.w3.org/2000/svg" width="${canvasWidth}" height="${canvasHeight}" viewBox="0 0 ${canvasWidth} ${canvasHeight}">
-  <rect width="${canvasWidth}" height="${canvasHeight}" fill="#f4f1ea"/>
-  <rect x="${frameX}" y="${frameY}" width="${frameWidth}" height="${frameHeight}" fill="none" stroke="#555555" stroke-width="1.6"/>
-  <text x="${contentX}" y="132" fill="#111111" font-size="33" font-family="'Roboto Condensed', 'Arial Narrow', Arial, sans-serif" font-weight="700" letter-spacing="0.8">THE OTC DESK</text>
-  <line x1="${contentX}" y1="146" x2="286" y2="146" stroke="#b08a3c" stroke-width="2"/>
-  <text x="${contentX}" y="198" fill="#111111" font-size="60" font-family="'Roboto Condensed', 'Arial Narrow', Arial, sans-serif" font-weight="700" letter-spacing="0.2">${escape(model.title)}</text>
-  <text x="${contentX}" y="226" fill="#6c6a65" font-size="19" font-family="'Roboto Condensed', 'Arial Narrow', Arial, sans-serif" font-weight="400" letter-spacing="0.1">${escape(model.timestamp || '')}</text>
-  ${rows.map((row, idx) => {
-    const y = rowStartY + idx * rowGap;
-    return `
-      <text x="${contentX}" y="${y}" fill="#6c6a65" font-size="22" font-family="'Roboto Condensed', 'Arial Narrow', Arial, sans-serif" font-weight="700" letter-spacing="0.9">${escape(row[0])}</text>
-      <text x="${contentX}" y="${y + 50}" fill="#111111" font-size="${idx < 3 ? 47 : 39}" font-family="'Roboto Condensed', 'Arial Narrow', Arial, sans-serif" font-weight="${idx < 3 ? 700 : 400}" letter-spacing="0">${escape(row[1])}</text>
-      <line x1="${contentX}" y1="${y + 74}" x2="${contentRight}" y2="${y + 74}" stroke="#d7d1c6" stroke-width="1.2" />
-    `;
-  }).join('')}
-  <text x="${contentX}" y="824" fill="#7a7468" font-size="18" font-family="'Roboto Condensed', 'Arial Narrow', Arial, sans-serif" font-weight="400" letter-spacing="0">Private OTC Execution</text>
+  <rect width="${canvasWidth}" height="${canvasHeight}" fill="${brandGreen}"/>
+  <rect x="${ticketX}" y="${ticketY}" width="${ticketWidth}" height="${ticketHeight}" fill="${paper}"/>
+  <polygon points="${zigzagPoints}" fill="${paper}"/>
+  <image href="${receiptLogoDataUrl}" x="${logoX}" y="${ticketY + 130}" width="${logoWidth}" height="${logoHeight}" preserveAspectRatio="xMidYMid meet"/>
+  <text x="${canvasWidth/2}" y="${dateY}" text-anchor="middle" fill="${muted}" font-size="19" font-family="${mono}" font-weight="400">${escape(model.timestamp || '')}</text>
+  <text x="${canvasWidth/2}" y="${titleY}" text-anchor="middle" fill="${ink}" font-size="38" font-family="${sans}" font-weight="700" letter-spacing="0.8">${escape(model.title)}</text>
+
+  ${leftRightRow(rowY(0), 'Estatus de operación', statusText, 20, 20, 700)}
+  ${divider(separatorY(0))}
+
+  <text x="${contentX}" y="${rowY(1)}" dominant-baseline="middle" fill="${label}" font-size="20" font-family="${mono}">Tipo de cambio USD/MXN</text>
+  <text x="${contentRight}" y="${rowY(1)}" dominant-baseline="middle" text-anchor="end" fill="${ink}" font-size="${rateSize}" font-family="${mono}" font-weight="700">${escape(model.rate)}</text>
+  ${divider(separatorY(1))}
+
+  ${leftRightRow(rowY(2), 'Depósito', model.deposit, bodySize)}
+  ${divider(separatorY(2))}
+  ${leftRightRow(rowY(3), 'Recibe cliente', model.receive, bodySize)}
+  ${divider(separatorY(3))}
+
+  <text x="${contentX}" y="${clientBlockCenterY}" dominant-baseline="middle" fill="${label}" font-size="${bodySize}" font-family="${mono}">Nombre del cliente</text>
+  ${clientLines.map((line, index) => `
+  <text x="${contentRight}" y="${clientBlockCenterY + (index - (clientLines.length - 1) / 2) * clientLineGap}" dominant-baseline="middle" text-anchor="end" fill="${ink}" font-size="${bodySize}" font-family="${mono}">${escape(line)}</text>`).join('')}
+  ${divider(clientSeparatorY)}
+
+  <text x="${contentX}" y="${walletCenterY}" dominant-baseline="middle" fill="${label}" font-size="${bodySize}" font-family="${mono}">CLABE / Wallet</text>
+  <text x="${contentRight}" y="${walletCenterY}" dominant-baseline="middle" text-anchor="end" fill="${ink}" font-size="${bodySize}" font-family="${mono}" font-weight="400">${escape(model.clabeLast4)}</text>
+  ${divider(walletSeparatorY)}
+
 </svg>`.trim();
   }
 
@@ -1445,8 +1596,9 @@ function initApp() {
     return await new Promise(resolve => canvas.toBlob(resolve, type));
   }
 
-  function openReceiptWindow(h){
+  async function openReceiptWindow(h){
     const model = getReceiptModel(h);
+    await ensureReceiptLogoDataUrl();
     currentReceiptSvg = buildReceiptSvg(model);
     currentReceiptDataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(currentReceiptSvg)}`;
     document.getElementById('receiptPreviewImage').src = currentReceiptDataUrl;
@@ -1540,7 +1692,7 @@ function initApp() {
             </div>
             <div class="hist-meta-row">
               <span class="icon">#</span>
-              <input type="text" class="hist-meta-input hist-clabe-input" data-id="${h.id}" placeholder="últimos 4 clabe" value="${escapeHtml(h.clabeLast4||'')}" inputmode="numeric" maxlength="4" />
+              <input type="text" class="hist-meta-input hist-clabe-input" data-id="${h.id}" placeholder="últimos 4 CLABE / Wallet" value="${escapeHtml(h.clabeLast4||'')}" inputmode="numeric" maxlength="4" />
             </div>
             <div class="hist-edit-actions">
               <button class="hist-edit-cancel" data-id="${h.id}" data-action="discard-edit">Descartar</button>
@@ -1591,7 +1743,10 @@ function initApp() {
         const id = parseFloat(btn.dataset.id);
         const current = state.history.find(h => h.id === id);
         if(!current || current.status !== 'done') return;
-        openReceiptWindow(current);
+        openReceiptWindow(current).catch((err) => {
+          console.error(err);
+          alert('No se pudo generar el recibo.');
+        });
       });
     });
 

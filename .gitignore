@@ -2,3 +2,6 @@
 .vercel
 node_modules
 .npm-cache
+receipt-preview*.svg
+receipt-preview*.png
+receipt-lab*.png

@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Receipt Lab</title>
+  <style>
+    :root {
+      --bg: #0b1119;
+      --panel: #111a24;
+      --panel-2: #0d151e;
+      --border: #263442;
+      --text: #f7f3ea;
+      --muted: #9da7b3;
+      --accent: #d4af5f;
+      --green: #043c2a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Roboto Condensed", "Arial Narrow", Arial, sans-serif;
+    }
+    .lab {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      min-height: 100vh;
+    }
+    .controls {
+      border-right: 1px solid var(--border);
+      background: linear-gradient(180deg, #121d28 0%, #0c141d 100%);
+      padding: 18px;
+      overflow: auto;
+      max-height: 100vh;
+    }
+    .brand-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .back {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .brand-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .group {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .group-title {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 10px;
+    }
+    .control {
+      display: grid;
+      grid-template-columns: 1fr 86px;
+      gap: 10px;
+      align-items: center;
+      margin: 10px 0;
+    }
+    label {
+      font-size: 14px;
+      color: #dce1e6;
+    }
+    input[type="range"] {
+      grid-column: 1 / -1;
+      width: 100%;
+      accent-color: var(--accent);
+    }
+    input[type="number"],
+    input[type="text"],
+    input[type="color"],
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 9px 10px;
+      font: inherit;
+      outline: none;
+    }
+    input[type="color"] {
+      height: 38px;
+      padding: 4px;
+    }
+    textarea {
+      min-height: 82px;
+      resize: vertical;
+      font-family: "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+    }
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    button {
+      border: 1px solid var(--border);
+      background: #152232;
+      color: var(--text);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.primary {
+      border-color: #d2aa54;
+      background: #2b2415;
+      color: #f5d88c;
+    }
+    .stage {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: 28px;
+      overflow: auto;
+    }
+    .preview-wrap {
+      width: min(520px, 100%);
+      aspect-ratio: 9 / 16;
+      display: grid;
+      place-items: center;
+      background: #05090d;
+      border: 1px solid #1e2b38;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    #preview {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 6px;
+      object-fit: contain;
+      background: #000;
+    }
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      margin-top: 8px;
+    }
+    @media (max-width: 900px) {
+      .lab { grid-template-columns: 1fr; }
+      .controls {
+        max-height: none;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .stage {
+        min-height: auto;
+        padding: 16px;
+      }
+      .preview-wrap {
+        width: min(430px, 100%);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="lab">
+    <aside class="controls">
+      <div class="brand-row">
+        <h1>Receipt Lab</h1>
+        <div class="brand-links">
+          <a class="back" href="/settings.html">Settings</a>
+          <a class="back" href="/">Calculadora</a>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="copyPreset">Copiar valores</button>
+        <button id="downloadSvg">Descargar SVG</button>
+        <button id="resetPreset">Reset</button>
+        <button id="fitPreset">Compactar</button>
+      </div>
+
+      <section class="group">
+        <div class="group-title">Formato</div>
+        <div class="control" data-key="bg">
+          <label>Fondo</label>
+          <input type="color" value="#043c2a" />
+        </div>
+        <div class="control" data-key="paper">
+          <label>Papel</label>
+          <input type="color" value="#f9f8f4" />
+        </div>
+        <div class="control" data-key="ticketWidth">
+          <label>Ancho ticket</label>
+          <input type="number" min="620" max="900" step="10" />
+          <input type="range" min="620" max="900" step="10" />
+        </div>
+        <div class="control" data-key="ticketHeight">
+          <label>Alto ticket</label>
+          <input type="number" min="900" max="1320" step="10" />
+          <input type="range" min="900" max="1320" step="10" />
+        </div>
+        <div class="control" data-key="ticketY">
+          <label>Posición vertical</label>
+          <input type="number" min="120" max="380" step="5" />
+          <input type="range" min="120" max="380" step="5" />
+        </div>
+        <div class="control" data-key="canvasHeight">
+          <label>Recorte vertical</label>
+          <input type="number" min="900" max="1920" step="10" />
+          <input type="range" min="900" max="1920" step="10" />
+        </div>
+        <div class="control" data-key="zigzagDepth">
+          <label>Dientes</label>
+          <input type="number" min="0" max="42" step="2" />
+          <input type="range" min="0" max="42" step="2" />
+        </div>
+      </section>
+
+      <section class="group">
+        <div class="group-title">Header</div>
+        <div class="control" data-key="logoWidth">
+          <label>Logo</label>
+          <input type="number" min="180" max="360" step="4" />
+          <input type="range" min="180" max="360" step="4" />
+        </div>
+        <div class="control" data-key="logoY">
+          <label>Altura logo</label>
+          <input type="number" min="40" max="130" step="2" />
+          <input type="range" min="40" max="130" step="2" />
+        </div>
+        <div class="control" data-key="dateY">
+          <label>Fecha</label>
+          <input type="number" min="110" max="430" step="2" />
+          <input type="range" min="110" max="430" step="2" />
+        </div>
+        <div class="control" data-key="titleY">
+          <label>Título</label>
+          <input type="number" min="180" max="380" step="2" />
+          <input type="range" min="180" max="380" step="2" />
+        </div>
+        <div class="control" data-key="titleSize">
+          <label>Tamaño título</label>
+          <input type="number" min="38" max="68" step="1" />
+          <input type="range" min="38" max="68" step="1" />
+        </div>
+      </section>
+
+      <section class="group">
+        <div class="group-title">Contenido</div>
+        <div class="control" data-key="baseY">
+          <label>Inicio datos</label>
+          <input type="number" min="280" max="520" step="2" />
+          <input type="range" min="280" max="520" step="2" />
+        </div>
+        <div class="control" data-key="rowGap">
+          <label>Separación filas</label>
+          <input type="number" min="52" max="92" step="2" />
+          <input type="range" min="52" max="92" step="2" />
+        </div>
+        <div class="control" data-key="bodySize">
+          <label>Texto datos</label>
+          <input type="number" min="17" max="27" step="1" />
+          <input type="range" min="17" max="27" step="1" />
+        </div>
+        <div class="control" data-key="rateSize">
+          <label>Tamaño TC</label>
+          <input type="number" min="24" max="42" step="1" />
+          <input type="range" min="24" max="42" step="1" />
+        </div>
+      </section>
+
+      <section class="group">
+        <div class="group-title">Datos de prueba</div>
+        <div class="control" data-key="titleText">
+          <label>Operación</label>
+          <input type="text" />
+        </div>
+        <div class="control" data-key="clientName">
+          <label>Cliente</label>
+          <input type="text" />
+        </div>
+        <div class="control" data-key="deposit">
+          <label>Depósito</label>
+          <input type="text" />
+        </div>
+        <div class="control" data-key="receive">
+          <label>Recibe</label>
+          <input type="text" />
+        </div>
+        <div class="control" data-key="clabeLast4">
+          <label>CLABE / Wallet</label>
+          <input type="text" />
+        </div>
+      </section>
+
+      <section class="group">
+        <div class="group-title">Preset</div>
+        <textarea id="presetText" spellcheck="false"></textarea>
+        <p class="hint">Mueve controles, copia estos valores y me los mandas. Yo los aplico al recibo real.</p>
+      </section>
+    </aside>
+
+    <section class="stage">
+      <div class="preview-wrap">
+        <img id="preview" alt="Vista previa del recibo" />
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'receipt_lab_preset_v4';
+    const defaults = {
+      bg: '#043c2a',
+      paper: '#fffefa',
+      canvasHeight: 1650,
+      ticketWidth: 780,
+      ticketHeight: 1150,
+      ticketY: 145,
+      zigzagDepth: 22,
+      logoWidth: 304,
+      logoY: 130,
+      dateY: 408,
+      titleY: 342,
+      titleSize: 38,
+      baseY: 520,
+      rowGap: 64,
+      bodySize: 21,
+      rateSize: 32,
+      titleText: 'VENTA DE USD',
+      clientName: 'FICEIN UNION DE CREDITO SA DE CV',
+      deposit: '$1,000.00 USD',
+      receive: '$17,511.21 MXN',
+      clabeLast4: '7578'
+    };
+    const compact = {
+      ...defaults,
+      canvasHeight: 1420,
+      ticketWidth: 700,
+      ticketHeight: 1000,
+      ticketY: 160,
+      logoWidth: 340,
+      logoY: 118,
+      dateY: 252,
+      titleY: 322,
+      titleSize: 38,
+      baseY: 438,
+      rowGap: 62,
+      rateSize: 31
+    };
+    const state = loadPreset();
+    let logoDataUrl = '';
+    let currentSvg = '';
+
+    function loadPreset(){
+      try {
+        return { ...defaults, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') };
+      } catch (error) {
+        return { ...defaults };
+      }
+    }
+
+    function escapeXml(value){
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function wrapRight(value, max = 25){
+      const raw = String(value || 'SIN NOMBRE').trim();
+      if (raw.length <= max) return [raw];
+      const words = raw.split(/\s+/);
+      const lines = [];
+      let current = '';
+      words.forEach((word) => {
+        const next = current ? `${current} ${word}` : word;
+        if (next.length > max && current) {
+          lines.push(current);
+          current = word;
+        } else {
+          current = next;
+        }
+      });
+      if (current) lines.push(current);
+      return lines.slice(0, 2);
+    }
+
+    function maskedLast4(value){
+      const digits = String(value || '').replace(/\D/g, '').slice(-4);
+      return digits ? `***${digits}` : '—';
+    }
+
+    async function loadLogo(){
+      const response = await fetch('assets/logo.png', { cache: 'no-store' });
+      const blob = await response.blob();
+      logoDataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    function buildSvg(){
+      const canvasWidth = 1080;
+      const canvasHeight = Number(state.canvasHeight);
+      const ticketWidth = Number(state.ticketWidth);
+      const ticketHeight = Number(state.ticketHeight);
+      const ticketX = (canvasWidth - ticketWidth) / 2;
+      const ticketY = Number(state.ticketY);
+      const contentX = ticketX + 64;
+      const contentRight = ticketX + ticketWidth - 64;
+      const zigzagCount = 18;
+      const zigzagStep = ticketWidth / zigzagCount;
+      const zigzagDepth = Number(state.zigzagDepth);
+      const zigzagOverlap = 2;
+      const zigzagPoints = zigzagDepth > 0
+        ? Array.from({ length: zigzagCount }, (_, i) => {
+            const startX = ticketX + i * zigzagStep;
+            const midX = startX + zigzagStep / 2;
+            const endX = startX + zigzagStep;
+            return `${startX},${ticketY + ticketHeight - zigzagOverlap} ${midX},${ticketY + ticketHeight + zigzagDepth} ${endX},${ticketY + ticketHeight - zigzagOverlap}`;
+          }).join(' ')
+        : `${ticketX},${ticketY + ticketHeight} ${ticketX + ticketWidth},${ticketY + ticketHeight}`;
+      const logoWidth = Number(state.logoWidth);
+      const logoHeight = logoWidth * (140 / 888);
+      const logoX = (canvasWidth - logoWidth) / 2;
+      const mono = "'SFMono-Regular','Menlo','Monaco','Consolas','Liberation Mono','Courier New',monospace";
+      const sans = "'Roboto Condensed','Arial Narrow',Arial,sans-serif";
+      const ink = '#141414';
+      const muted = '#4c4a45';
+      const label = '#5d5a54';
+      const dividerColor = '#cbc6bb';
+      const baseY = ticketY + Number(state.baseY);
+      const rowGap = Number(state.rowGap);
+      const bodySize = Number(state.bodySize);
+      const rateSize = Number(state.rateSize);
+      const dividerOffset = rowGap / 2;
+      const clientLines = wrapRight(state.clientName, 26);
+      const rowY = (index) => baseY + rowGap * index;
+      const separatorY = (index) => baseY + rowGap * index + dividerOffset;
+      const clientLineGap = 26;
+      const clientTopY = separatorY(3);
+      const clientExtraHeight = Math.max(0, clientLines.length - 1) * clientLineGap;
+      const clientSeparatorY = clientTopY + rowGap + clientExtraHeight;
+      const clientBlockCenterY = (clientTopY + clientSeparatorY) / 2;
+      const walletCenterY = clientSeparatorY + dividerOffset;
+      const walletSeparatorY = clientSeparatorY + rowGap;
+      const divider = (y) => `<line x1="${contentX}" y1="${y}" x2="${contentRight}" y2="${y}" stroke="${dividerColor}" stroke-width="1.2"/>`;
+      const row = (y, left, right, rightSize = bodySize, leftSize = bodySize, weight = 400) => `
+  <text x="${contentX}" y="${y}" dominant-baseline="middle" fill="${label}" font-size="${leftSize}" font-family="${mono}" font-weight="400">${escapeXml(left)}</text>
+  <text x="${contentRight}" y="${y}" dominant-baseline="middle" text-anchor="end" fill="${ink}" font-size="${rightSize}" font-family="${mono}" font-weight="${weight}">${escapeXml(right)}</text>`;
+
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="${canvasWidth}" height="${canvasHeight}" viewBox="0 0 ${canvasWidth} ${canvasHeight}">
+  <rect width="${canvasWidth}" height="${canvasHeight}" fill="${state.bg}"/>
+  <rect x="${ticketX}" y="${ticketY}" width="${ticketWidth}" height="${ticketHeight}" fill="${state.paper}"/>
+  <polygon points="${zigzagPoints}" fill="${state.paper}"/>
+  <image href="${logoDataUrl}" x="${logoX}" y="${ticketY + Number(state.logoY)}" width="${logoWidth}" height="${logoHeight}" preserveAspectRatio="xMidYMid meet"/>
+  <text x="${canvasWidth/2}" y="${ticketY + Number(state.dateY)}" text-anchor="middle" fill="${muted}" font-size="19" font-family="${mono}" font-weight="400">Viernes, Abril 17, 2026 · 2:59:37 PM</text>
+  <text x="${canvasWidth/2}" y="${ticketY + Number(state.titleY)}" text-anchor="middle" fill="${ink}" font-size="${state.titleSize}" font-family="${sans}" font-weight="700" letter-spacing="0.8">${escapeXml(state.titleText)}</text>
+
+  ${row(rowY(0), 'Estatus de operación', 'COMPLETADO', 20, 20, 700)}
+  ${divider(separatorY(0))}
+  <text x="${contentX}" y="${rowY(1)}" dominant-baseline="middle" fill="${label}" font-size="20" font-family="${mono}">Tipo de cambio USD/MXN</text>
+  <text x="${contentRight}" y="${rowY(1)}" dominant-baseline="middle" text-anchor="end" fill="${ink}" font-size="${rateSize}" font-family="${mono}" font-weight="700">17.5112</text>
+  ${divider(separatorY(1))}
+  ${row(rowY(2), 'Depósito', state.deposit, bodySize)}
+  ${divider(separatorY(2))}
+  ${row(rowY(3), 'Recibe cliente', state.receive, bodySize)}
+  ${divider(separatorY(3))}
+  <text x="${contentX}" y="${clientBlockCenterY}" dominant-baseline="middle" fill="${label}" font-size="${bodySize}" font-family="${mono}">Nombre del cliente</text>
+  ${clientLines.map((line, index) => `<text x="${contentRight}" y="${clientBlockCenterY + (index - (clientLines.length - 1) / 2) * clientLineGap}" dominant-baseline="middle" text-anchor="end" fill="${ink}" font-size="${bodySize}" font-family="${mono}">${escapeXml(line)}</text>`).join('')}
+  ${divider(clientSeparatorY)}
+  <text x="${contentX}" y="${walletCenterY}" dominant-baseline="middle" fill="${label}" font-size="${bodySize}" font-family="${mono}">CLABE / Wallet</text>
+  <text x="${contentRight}" y="${walletCenterY}" dominant-baseline="middle" text-anchor="end" fill="${ink}" font-size="${bodySize}" font-family="${mono}">${escapeXml(maskedLast4(state.clabeLast4))}</text>
+  ${divider(walletSeparatorY)}
+</svg>`;
+    }
+
+    function render(){
+      currentSvg = buildSvg();
+      document.getElementById('preview').src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(currentSvg)}`;
+      document.getElementById('presetText').value = JSON.stringify(state, null, 2);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function bindControl(control){
+      const key = control.dataset.key;
+      const inputs = [...control.querySelectorAll('input')];
+      inputs.forEach((input) => {
+        input.value = state[key];
+        input.addEventListener('input', () => {
+          const value = input.type === 'number' || input.type === 'range' ? Number(input.value) : input.value;
+          state[key] = value;
+          inputs.forEach((other) => {
+            if (other !== input) other.value = value;
+          });
+          render();
+        });
+      });
+    }
+
+    document.querySelectorAll('.control').forEach(bindControl);
+    document.getElementById('copyPreset').addEventListener('click', async () => {
+      await navigator.clipboard.writeText(JSON.stringify(state, null, 2));
+    });
+    document.getElementById('downloadSvg').addEventListener('click', () => {
+      const blob = new Blob([currentSvg], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'otc-receipt-preview.svg';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+    document.getElementById('resetPreset').addEventListener('click', () => {
+      Object.assign(state, defaults);
+      document.querySelectorAll('.control').forEach((control) => {
+        const key = control.dataset.key;
+        control.querySelectorAll('input').forEach((input) => { input.value = state[key]; });
+      });
+      render();
+    });
+    document.getElementById('fitPreset').addEventListener('click', () => {
+      Object.assign(state, compact);
+      document.querySelectorAll('.control').forEach((control) => {
+        const key = control.dataset.key;
+        control.querySelectorAll('input').forEach((input) => { input.value = state[key]; });
+      });
+      render();
+    });
+
+    loadLogo().then(render).catch((error) => {
+      document.querySelector('.preview-wrap').textContent = 'No se pudo cargar el logo.';
+      console.error(error);
+    });
+  </script>
+</body>
+</html>

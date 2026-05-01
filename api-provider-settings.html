@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0a0a">
+<title>API Provider Settings · BPS Calculator</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface-2: #1c1c1c;
+    --border: #262626;
+    --border-strong: #3a3a3a;
+    --text: #f5f5f5;
+    --text-mute: #9b9b9b;
+    --text-dim: #5c5c5c;
+    --accent: #d4af37;
+    --green: #4ade80;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --radius: 14px;
+  }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+    min-height: 100vh;
+  }
+  body {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 18px 14px 44px;
+  }
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .eyebrow {
+    color: var(--accent);
+    font-size: 10px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  h1 {
+    margin-top: 4px;
+    font-size: clamp(28px, 7vw, 46px);
+    line-height: 0.95;
+    letter-spacing: -1.8px;
+  }
+  .sub {
+    margin-top: 10px;
+    color: var(--text-mute);
+    font-size: 14px;
+    max-width: 660px;
+    line-height: 1.5;
+  }
+  .nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .pill {
+    flex-shrink: 0;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 9px 12px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .pill.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0a0a0a;
+  }
+  .panel {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-top: 14px;
+  }
+  .panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  h2 {
+    font-size: 22px;
+    line-height: 1;
+    letter-spacing: -0.7px;
+  }
+  .hint {
+    margin-top: 8px;
+    color: var(--text-mute);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  .status {
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 12px;
+    padding: 11px 12px;
+    color: var(--text-mute);
+    font-size: 13px;
+    line-height: 1.45;
+    min-height: 45px;
+  }
+  .status.ok { color: var(--green); border-color: rgba(74,222,128,0.35); }
+  .status.err { color: var(--red); border-color: rgba(248,113,113,0.35); }
+  .status.wait { color: var(--blue); border-color: rgba(96,165,250,0.35); }
+  .kv {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: minmax(130px, 0.75fr) minmax(0, 1.25fr);
+    gap: 10px;
+    align-items: center;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+  .row:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+  .label {
+    color: var(--text-dim);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  code {
+    display: inline-block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    color: var(--text);
+    background: #0f0f0f;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px 7px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+  }
+  .codes {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .note {
+    border: 1px solid rgba(212,175,55,0.28);
+    background: rgba(212,175,55,0.08);
+    color: #d8c884;
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-top: 14px;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  @media (max-width: 720px) {
+    .topbar, .panel-head { align-items: flex-start; flex-direction: column; }
+    .nav { justify-content: flex-start; }
+    .grid, .row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">Settings</div>
+      <h1>API Provider</h1>
+      <p class="sub">Aqui revisamos proveedores de tipo de cambio sin exponer credenciales. Las llaves se configuran en local/Vercel como variables de entorno.</p>
+    </div>
+    <nav class="nav" aria-label="Navegacion">
+      <a class="pill" href="/settings.html">Settings</a>
+      <a class="pill" href="/">Calculadora</a>
+    </nav>
+  </header>
+
+  <section class="grid">
+    <article class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Capa</h2>
+          <p class="hint">Proveedor principal para el quote USD/MXN usado por la calculadora.</p>
+        </div>
+        <button class="pill primary" type="button" data-test="capa">Probar</button>
+      </div>
+      <div class="status" id="status-capa">Sin probar.</div>
+      <div class="kv">
+        <div class="row">
+          <div class="label">Endpoint local</div>
+          <code>/api/capa/fx?direction=buy</code>
+        </div>
+        <div class="row">
+          <div class="label">Variables</div>
+          <div class="codes"><code>CAPA_API_KEY</code><code>CAPA_BASE_URL</code></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Banxico FIX</h2>
+          <p class="hint">Referencia interbancaria para comparar contra el TC Capa.</p>
+        </div>
+        <button class="pill primary" type="button" data-test="banxico">Probar</button>
+      </div>
+      <div class="status" id="status-banxico">Sin probar.</div>
+      <div class="kv">
+        <div class="row">
+          <div class="label">Endpoint local</div>
+          <code>/api/banxico/fix</code>
+        </div>
+        <div class="row">
+          <div class="label">Variable</div>
+          <code>BANXICO_TOKEN</code>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <h2>Prueba rapida</h2>
+        <p class="hint">Corre las dos conexiones y confirma si el sitio live tiene sus variables listas.</p>
+      </div>
+      <button class="pill primary" type="button" id="testAll">Probar ambas</button>
+    </div>
+    <div class="note">Seguro por diseno: esta pantalla no lee ni imprime API keys. Solo prueba los endpoints internos que ya usa la calculadora.</div>
+  </section>
+
+<script>
+  const tests = {
+    capa: {
+      url: '/api/capa/fx?direction=buy',
+      status: document.getElementById('status-capa'),
+      format(data) {
+        const rate = Number(data?.data?.rate);
+        const spread = data?.data?.spread != null ? Number(data.data.spread) * 10000 : null;
+        const parts = [`OK · TC Capa ${rate.toFixed(4)} USD/MXN`];
+        if (spread != null && Number.isFinite(spread)) parts.push(`spread ${spread.toFixed(2)} bps`);
+        return parts.join(' · ');
+      }
+    },
+    banxico: {
+      url: '/api/banxico/fix',
+      status: document.getElementById('status-banxico'),
+      format(data) {
+        const rate = Number(data?.data?.rate);
+        const date = data?.data?.date ? ` · ${data.data.date}` : '';
+        return `OK · Banxico FIX ${rate.toFixed(4)} USD/MXN${date}`;
+      }
+    }
+  };
+
+  async function runTest(id) {
+    const test = tests[id];
+    if (!test) return;
+    test.status.className = 'status wait';
+    test.status.textContent = 'Probando conexion...';
+
+    try {
+      const response = await fetch(test.url, { headers: { Accept: 'application/json' }, cache: 'no-store' });
+      let data = null;
+      try { data = await response.json(); } catch (error) {}
+
+      if (!response.ok || !data?.success) {
+        const code = data?.errorCode || `HTTP_${response.status}`;
+        const message = data?.error || 'No se pudo conectar.';
+        test.status.className = 'status err';
+        test.status.textContent = `${code}: ${message}`;
+        return;
+      }
+
+      test.status.className = 'status ok';
+      test.status.textContent = test.format(data);
+    } catch (error) {
+      test.status.className = 'status err';
+      test.status.textContent = 'NETWORK_ERROR: No se pudo llegar al endpoint.';
+    }
+  }
+
+  document.querySelectorAll('[data-test]').forEach((button) => {
+    button.addEventListener('click', () => runTest(button.dataset.test));
+  });
+  document.getElementById('testAll').addEventListener('click', () => {
+    runTest('capa');
+    runTest('banxico');
+  });
+</script>
+</body>
+</html>
