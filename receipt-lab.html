@@ -430,12 +430,15 @@
     }
 
     function buildSvg(){
+      const ticketScale = 1.2;
       const canvasWidth = 1080;
       const canvasHeight = Number(state.canvasHeight);
       const ticketWidth = Number(state.ticketWidth);
       const ticketHeight = Number(state.ticketHeight);
       const ticketX = (canvasWidth - ticketWidth) / 2;
       const ticketY = Number(state.ticketY);
+      const scaleOriginX = canvasWidth / 2;
+      const scaleOriginY = ticketY + ticketHeight / 2;
       const contentX = ticketX + 64;
       const contentRight = ticketX + ticketWidth - 64;
       const zigzagCount = 18;
@@ -481,6 +484,7 @@
 
       return `<svg xmlns="http://www.w3.org/2000/svg" width="${canvasWidth}" height="${canvasHeight}" viewBox="0 0 ${canvasWidth} ${canvasHeight}">
   <rect width="${canvasWidth}" height="${canvasHeight}" fill="${state.bg}"/>
+  <g transform="translate(${scaleOriginX} ${scaleOriginY}) scale(${ticketScale}) translate(${-scaleOriginX} ${-scaleOriginY})">
   <rect x="${ticketX}" y="${ticketY}" width="${ticketWidth}" height="${ticketHeight}" fill="${state.paper}"/>
   <polygon points="${zigzagPoints}" fill="${state.paper}"/>
   <image href="${logoDataUrl}" x="${logoX}" y="${ticketY + Number(state.logoY)}" width="${logoWidth}" height="${logoHeight}" preserveAspectRatio="xMidYMid meet"/>
@@ -502,6 +506,7 @@
   <text x="${contentX}" y="${walletCenterY}" dominant-baseline="middle" fill="${label}" font-size="${bodySize}" font-family="${mono}">CLABE / Wallet</text>
   <text x="${contentRight}" y="${walletCenterY}" dominant-baseline="middle" text-anchor="end" fill="${ink}" font-size="${bodySize}" font-family="${mono}">${escapeXml(maskedLast4(state.clabeLast4))}</text>
   ${divider(walletSeparatorY)}
+  </g>
 </svg>`;
     }
 

@@ -1568,12 +1568,15 @@ function initApp() {
   }
 
   function buildReceiptSvg(model){
+    const receiptScale = 1.2;
     const canvasWidth = 1080;
     const canvasHeight = 1650;
     const ticketWidth = 780;
     const ticketHeight = 1150;
     const ticketX = (canvasWidth - ticketWidth) / 2;
     const ticketY = 145;
+    const scaleOriginX = canvasWidth / 2;
+    const scaleOriginY = ticketY + ticketHeight / 2;
     const contentX = ticketX + 64;
     const contentRight = ticketX + ticketWidth - 64;
     const mono = "'SFMono-Regular','Menlo','Monaco','Consolas','Liberation Mono','Courier New',monospace";
@@ -1648,6 +1651,7 @@ function initApp() {
     return `
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${canvasWidth}" height="${canvasHeight}" viewBox="0 0 ${canvasWidth} ${canvasHeight}">
   <rect width="${canvasWidth}" height="${canvasHeight}" fill="${receiptBg}"/>
+  <g transform="translate(${scaleOriginX} ${scaleOriginY}) scale(${receiptScale}) translate(${-scaleOriginX} ${-scaleOriginY})">
   <rect x="${ticketX}" y="${ticketY}" width="${ticketWidth}" height="${ticketHeight}" fill="${paper}"/>
   <polygon points="${zigzagPoints}" fill="${paper}"/>
   <image href="${logoHref}" xlink:href="${logoHref}" x="${logoX}" y="${ticketY + 130}" width="${logoWidth}" height="${logoHeight}" preserveAspectRatio="xMidYMid meet"/>
@@ -1675,17 +1679,21 @@ function initApp() {
   <text x="${contentRight}" y="${walletCenterY}" dominant-baseline="middle" text-anchor="end" fill="${ink}" font-size="${bodySize}" font-family="${mono}" font-weight="400">${escape(model.clabeLast4)}</text>
   ${divider(walletSeparatorY)}
 
+  </g>
 </svg>`.trim();
   }
 
   async function renderReceiptCanvas(model){
     const logo = await ensureReceiptLogoImage();
+    const receiptScale = 1.2;
     const canvasWidth = 1080;
     const canvasHeight = 1650;
     const ticketWidth = 780;
     const ticketHeight = 1150;
     const ticketX = (canvasWidth - ticketWidth) / 2;
     const ticketY = 145;
+    const scaleOriginX = canvasWidth / 2;
+    const scaleOriginY = ticketY + ticketHeight / 2;
     const contentX = ticketX + 64;
     const contentRight = ticketX + ticketWidth - 64;
     const mono = 'SFMono-Regular, Menlo, Monaco, Consolas, monospace';
@@ -1764,6 +1772,11 @@ function initApp() {
 
     ctx.fillStyle = receiptBg;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    ctx.save();
+    ctx.translate(scaleOriginX, scaleOriginY);
+    ctx.scale(receiptScale, receiptScale);
+    ctx.translate(-scaleOriginX, -scaleOriginY);
+
     ctx.fillStyle = paper;
     ctx.fillRect(ticketX, ticketY, ticketWidth, ticketHeight);
 
@@ -1804,6 +1817,7 @@ function initApp() {
     text('CLABE / Wallet', contentX, walletCenterY, { fill: label, size: bodySize });
     text(model.clabeLast4, contentRight, walletCenterY, { fill: ink, size: bodySize, align: 'right' });
     divider(walletSeparatorY);
+    ctx.restore();
 
     return canvas;
   }
