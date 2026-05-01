@@ -1385,10 +1385,15 @@ function initApp() {
     if(state.montoUsd<=0||state.montoMxn<=0){ showToast('Falta monto'); return; }
     const txt=buildClientText();
     if(!txt){ showToast('Falta info'); return; }
-    const copied = await copyToClipboard(txt);
-    if (!copied) { showToast('No se pudo copiar'); return; }
-    pushLog('copy');
-    showToast('Copiado');
+    const entry = pushLog('copy');
+    let copied = false;
+    try {
+      copied = await copyToClipboard(txt);
+    } catch {
+      copied = false;
+    }
+    if (!entry) { showToast('No se pudo guardar'); return; }
+    showToast(copied ? 'Copiado y guardado' : 'Guardado, no se pudo copiar');
   });
 
   // localStorage (persistente entre sesiones)
