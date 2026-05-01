@@ -3,7 +3,7 @@
   "cleanUrls": true,
   "functions": {
     "server.js": {
-      "includeFiles": "{*.html,assets/**}"
+      "includeFiles": "{*.html,site.webmanifest,sw.js,assets/**}"
     }
   },
   "rewrites": [

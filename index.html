@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="BPS Calculator">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <title>BPS Calculator · OTC Desk</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -655,7 +662,7 @@
   <div class="receipt-sheet">
     <div class="receipt-actions">
       <button class="receipt-action-btn" id="receiptDownloadBtn">Descargar PNG</button>
-      <button class="receipt-action-btn" id="receiptPrintBtn">Guardar PDF</button>
+      <button class="receipt-action-btn" id="receiptPrintBtn">Descargar PDF</button>
       <button class="receipt-action-btn" id="receiptCopyBtn">Copiar imagen</button>
       <button class="receipt-action-btn receipt-close-btn" id="receiptCloseBtn">Cerrar</button>
     </div>
@@ -690,6 +697,10 @@ else {
   gateInput.focus();
 }
 
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+
 function initApp() {
 (function(){
   const state = { direction:'buy', fxMid:null, capaRate:null, refRate:null, refLabel:'', fxSource:'', fxTime:null, fxBasisLabel:'', montoUsd:0, montoMxn:0, montoSource:null, bpsProv:0, bpsCli:0, history:[], capaQuote:null, bpsProvMode:'manual', capaError:null };
@@ -699,6 +710,8 @@ function initApp() {
   let currentReceiptSvg = '';
   let currentReceiptDataUrl = '';
   let receiptLogoDataUrl = '';
+  let currentReceiptCanvas = null;
+  let receiptLogoImage = null;
 
   // ══════════════════════════════════════════════════════════
   // GOOGLE SHEETS SYNC
@@ -1475,6 +1488,19 @@ function initApp() {
     return receiptLogoDataUrl;
   }
 
+  async function ensureReceiptLogoImage(){
+    if (receiptLogoImage) return receiptLogoImage;
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = new URL('assets/logo.png', window.location.href).href;
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = () => reject(new Error('No se pudo cargar el logo del recibo'));
+    });
+    receiptLogoImage = img;
+    return receiptLogoImage;
+  }
+
   function buildReceiptSvg(model){
     const canvasWidth = 1080;
     const canvasHeight = 1650;
@@ -1552,12 +1578,13 @@ function initApp() {
   <text x="${contentRight}" y="${y}" dominant-baseline="middle" text-anchor="end" fill="${ink}" font-size="${rightSize}" font-family="${mono}" font-weight="${rightWeight}">${escape(rightText)}</text>`;
     const divider = (y) => `<line x1="${contentX}" y1="${y}" x2="${contentRight}" y2="${y}" stroke="${dividerColor}" stroke-width="1.2"/>`;
 
+    const logoHref = escape(receiptLogoDataUrl);
     return `
-<svg xmlns="http://www.w3.org/2000/svg" width="${canvasWidth}" height="${canvasHeight}" viewBox="0 0 ${canvasWidth} ${canvasHeight}">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${canvasWidth}" height="${canvasHeight}" viewBox="0 0 ${canvasWidth} ${canvasHeight}">
   <rect width="${canvasWidth}" height="${canvasHeight}" fill="${brandGreen}"/>
   <rect x="${ticketX}" y="${ticketY}" width="${ticketWidth}" height="${ticketHeight}" fill="${paper}"/>
   <polygon points="${zigzagPoints}" fill="${paper}"/>
-  <image href="${receiptLogoDataUrl}" x="${logoX}" y="${ticketY + 130}" width="${logoWidth}" height="${logoHeight}" preserveAspectRatio="xMidYMid meet"/>
+  <image href="${logoHref}" xlink:href="${logoHref}" x="${logoX}" y="${ticketY + 130}" width="${logoWidth}" height="${logoHeight}" preserveAspectRatio="xMidYMid meet"/>
   <text x="${canvasWidth/2}" y="${dateY}" text-anchor="middle" fill="${muted}" font-size="19" font-family="${mono}" font-weight="400">${escape(model.timestamp || '')}</text>
   <text x="${canvasWidth/2}" y="${titleY}" text-anchor="middle" fill="${ink}" font-size="38" font-family="${sans}" font-weight="700" letter-spacing="0.8">${escape(model.title)}</text>
 
@@ -1585,6 +1612,140 @@ function initApp() {
 </svg>`.trim();
   }
 
+  async function renderReceiptCanvas(model){
+    const logo = await ensureReceiptLogoImage();
+    const canvasWidth = 1080;
+    const canvasHeight = 1650;
+    const ticketWidth = 780;
+    const ticketHeight = 1150;
+    const ticketX = (canvasWidth - ticketWidth) / 2;
+    const ticketY = 145;
+    const contentX = ticketX + 64;
+    const contentRight = ticketX + ticketWidth - 64;
+    const mono = 'SFMono-Regular, Menlo, Monaco, Consolas, monospace';
+    const sans = 'Roboto Condensed, Arial Narrow, Arial, sans-serif';
+    const brandGreen = '#043c2a';
+    const ink = '#141414';
+    const muted = '#4c4a45';
+    const label = '#5d5a54';
+    const paper = '#fffefa';
+    const dividerColor = '#cbc6bb';
+    const logoWidth = 304;
+    const logoHeight = logoWidth * (140 / 888);
+    const logoX = (canvasWidth - logoWidth) / 2;
+    const dateY = ticketY + 408;
+    const titleY = ticketY + 342;
+    const baseY = ticketY + 520;
+    const rowGap = 64;
+    const bodySize = 21;
+    const rateSize = 32;
+    const dividerOffset = rowGap / 2;
+    const clientLineGap = 26;
+    const statusText = model.status === 'done' ? 'COMPLETADO' : model.status === 'rejected' ? 'RECHAZADO' : 'PENDIENTE';
+    const rowY = (index) => baseY + rowGap * index;
+    const separatorY = (index) => baseY + rowGap * index + dividerOffset;
+    const wrapRight = (value, max = 24) => {
+      const raw = String(value || '').trim() || 'SIN NOMBRE';
+      if (raw.length <= max) return [raw];
+      const words = raw.split(/\s+/);
+      const lines = [];
+      let current = '';
+      words.forEach(word => {
+        const candidate = current ? `${current} ${word}` : word;
+        if (candidate.length > max && current) {
+          lines.push(current);
+          current = word;
+        } else {
+          current = candidate;
+        }
+      });
+      if (current) lines.push(current);
+      return lines.slice(0, 2);
+    };
+    const clientLines = wrapRight(model.clientName, 26);
+    const clientTopY = separatorY(3);
+    const clientExtraHeight = Math.max(0, clientLines.length - 1) * clientLineGap;
+    const clientSeparatorY = clientTopY + rowGap + clientExtraHeight;
+    const clientBlockCenterY = (clientTopY + clientSeparatorY) / 2;
+    const walletCenterY = clientSeparatorY + dividerOffset;
+    const walletSeparatorY = clientSeparatorY + rowGap;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    const ctx = canvas.getContext('2d');
+
+    const font = (size, family = mono, weight = 400) => `${weight} ${size}px ${family}`;
+    const divider = (y) => {
+      ctx.strokeStyle = dividerColor;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(contentX, y);
+      ctx.lineTo(contentRight, y);
+      ctx.stroke();
+    };
+    const text = (value, x, y, options = {}) => {
+      ctx.fillStyle = options.fill || ink;
+      ctx.font = font(options.size || bodySize, options.family || mono, options.weight || 400);
+      ctx.textAlign = options.align || 'left';
+      ctx.textBaseline = options.baseline || 'middle';
+      ctx.fillText(String(value || ''), x, y);
+    };
+    const leftRightRow = (y, leftText, rightText, rightSize = bodySize, leftSize = bodySize, rightWeight = 400) => {
+      text(leftText, contentX, y, { fill: label, size: leftSize });
+      text(rightText, contentRight, y, { fill: ink, size: rightSize, weight: rightWeight, align: 'right' });
+    };
+
+    ctx.fillStyle = brandGreen;
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    ctx.fillStyle = paper;
+    ctx.fillRect(ticketX, ticketY, ticketWidth, ticketHeight);
+
+    const zigzagCount = 18;
+    const zigzagStep = ticketWidth / zigzagCount;
+    const zigzagDepth = 22;
+    const zigzagOverlap = 2;
+    ctx.beginPath();
+    ctx.moveTo(ticketX, ticketY + ticketHeight - zigzagOverlap);
+    for (let i = 0; i < zigzagCount; i++) {
+      const startX = ticketX + i * zigzagStep;
+      ctx.lineTo(startX + zigzagStep / 2, ticketY + ticketHeight + zigzagDepth);
+      ctx.lineTo(startX + zigzagStep, ticketY + ticketHeight - zigzagOverlap);
+    }
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.drawImage(logo, logoX, ticketY + 130, logoWidth, logoHeight);
+    text(model.timestamp || '', canvasWidth / 2, dateY, { fill: muted, size: 19, align: 'center' });
+    text(model.title, canvasWidth / 2, titleY, { fill: ink, size: 38, family: sans, weight: 700, align: 'center' });
+
+    leftRightRow(rowY(0), 'Estatus de operación', statusText, 20, 20, 700);
+    divider(separatorY(0));
+    text('Tipo de cambio USD/MXN', contentX, rowY(1), { fill: label, size: 20 });
+    text(model.rate, contentRight, rowY(1), { fill: ink, size: rateSize, weight: 700, align: 'right' });
+    divider(separatorY(1));
+    leftRightRow(rowY(2), 'Depósito', model.deposit, bodySize);
+    divider(separatorY(2));
+    leftRightRow(rowY(3), 'Recibe cliente', model.receive, bodySize);
+    divider(separatorY(3));
+
+    text('Nombre del cliente', contentX, clientBlockCenterY, { fill: label, size: bodySize });
+    clientLines.forEach((line, index) => {
+      const y = clientBlockCenterY + (index - (clientLines.length - 1) / 2) * clientLineGap;
+      text(line, contentRight, y, { fill: ink, size: bodySize, align: 'right' });
+    });
+    divider(clientSeparatorY);
+    text('CLABE / Wallet', contentX, walletCenterY, { fill: label, size: bodySize });
+    text(model.clabeLast4, contentRight, walletCenterY, { fill: ink, size: bodySize, align: 'right' });
+    divider(walletSeparatorY);
+
+    return canvas;
+  }
+
+  function canvasToBlob(canvas, type = 'image/png', quality){
+    return new Promise(resolve => canvas.toBlob(resolve, type, quality));
+  }
+
   async function receiptSvgToBlob(type){
     const blob = new Blob([currentReceiptSvg], {type:'image/svg+xml;charset=utf-8'});
     if(type === 'image/svg+xml') return blob;
@@ -1600,11 +1761,54 @@ function initApp() {
     return await new Promise(resolve => canvas.toBlob(resolve, type));
   }
 
+  function canvasToPdfBlob(canvas){
+    const jpegBinary = atob(canvas.toDataURL('image/jpeg', 0.94).split(',')[1]);
+    const pageWidth = 432;
+    const pageHeight = Math.round(pageWidth * canvas.height / canvas.width);
+    const objects = [];
+    const addObject = (body) => objects.push(`${objects.length + 1} 0 obj\n${body}\nendobj\n`);
+    const content = `q\n${pageWidth} 0 0 ${pageHeight} 0 0 cm\n/Im0 Do\nQ`;
+
+    addObject('<< /Type /Catalog /Pages 2 0 R >>');
+    addObject('<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+    addObject(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`);
+    addObject(`<< /Type /XObject /Subtype /Image /Width ${canvas.width} /Height ${canvas.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpegBinary.length} >>\nstream\n${jpegBinary}\nendstream`);
+    addObject(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
+
+    let pdf = '%PDF-1.4\n';
+    const offsets = [0];
+    objects.forEach((object) => {
+      offsets.push(pdf.length);
+      pdf += object;
+    });
+    const xrefOffset = pdf.length;
+    pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+    for (let i = 1; i < offsets.length; i++) {
+      pdf += `${String(offsets[i]).padStart(10, '0')} 00000 n \n`;
+    }
+    pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+
+    const bytes = new Uint8Array(pdf.length);
+    for (let i = 0; i < pdf.length; i++) bytes[i] = pdf.charCodeAt(i) & 255;
+    return new Blob([bytes], { type: 'application/pdf' });
+  }
+
+  function downloadBlob(blob, filename){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 500);
+  }
+
   async function openReceiptWindow(h){
     const model = getReceiptModel(h);
-    await ensureReceiptLogoDataUrl();
-    currentReceiptSvg = buildReceiptSvg(model);
-    currentReceiptDataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(currentReceiptSvg)}`;
+    currentReceiptSvg = '';
+    currentReceiptCanvas = await renderReceiptCanvas(model);
+    currentReceiptDataUrl = currentReceiptCanvas.toDataURL('image/png');
     document.getElementById('receiptPreviewImage').src = currentReceiptDataUrl;
     document.getElementById('receiptModal').classList.add('show');
   }
@@ -1838,19 +2042,14 @@ function initApp() {
     if(e.target.id === 'receiptModal') document.getElementById('receiptModal').classList.remove('show');
   });
   document.getElementById('receiptDownloadBtn').addEventListener('click', async ()=>{
-    if(!currentReceiptSvg) return;
-    const blob = await receiptSvgToBlob('image/png');
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'recibo-the-otc-desk.png';
-    a.click();
-    setTimeout(()=>URL.revokeObjectURL(url), 500);
+    if(!currentReceiptCanvas) return;
+    const blob = await canvasToBlob(currentReceiptCanvas, 'image/png');
+    downloadBlob(blob, 'recibo-the-otc-desk.png');
   });
   document.getElementById('receiptCopyBtn').addEventListener('click', async ()=>{
-    if(!currentReceiptSvg) return;
+    if(!currentReceiptCanvas) return;
     try {
-      const blob = await receiptSvgToBlob('image/png');
+      const blob = await canvasToBlob(currentReceiptCanvas, 'image/png');
       if (navigator.clipboard && window.ClipboardItem) {
         await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
         showToast('Imagen copiada');
@@ -1862,11 +2061,10 @@ function initApp() {
     }
   });
   document.getElementById('receiptPrintBtn').addEventListener('click', ()=>{
-    if(!currentReceiptDataUrl) return;
-    const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=900,height=1100');
-    if (!printWindow) { showToast('No se pudo abrir vista de impresión'); return; }
-    printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Recibo</title><style>body{margin:0;background:#fff}img{width:100%;height:auto;display:block}</style></head><body><img src="${currentReceiptDataUrl}" alt="Recibo"><script>window.onload=()=>window.print();<\/script></body></html>`);
-    printWindow.document.close();
+    if(!currentReceiptCanvas) return;
+    const blob = canvasToPdfBlob(currentReceiptCanvas);
+    downloadBlob(blob, 'recibo-the-otc-desk.pdf');
+    showToast('PDF descargado');
   });
   document.getElementById('intToggle').addEventListener('click',()=>{ const body=document.getElementById('internalBody'), btn=document.getElementById('intToggle'); if(body.style.display==='none'){body.style.display='block';btn.textContent='ocultar';}else{body.style.display='none';btn.textContent='mostrar';} });
 
