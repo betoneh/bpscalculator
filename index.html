@@ -2069,7 +2069,7 @@ function initApp() {
           <div class="hist-actions-row">
             <span class="hist-status ${status}">${statusLabel}</span>
             <div class="hist-btns">
-              <button class="hist-receipt-btn" data-id="${h.id}" data-action="receipt" ${status!=='done'?'disabled':''}>Generar recibo</button>
+              <button class="hist-receipt-btn" data-id="${h.id}" data-action="receipt">Generar recibo</button>
               <button class="hist-edit-toggle-btn ${isEditing?'active':''}" data-id="${h.id}" data-action="toggle-edit" aria-label="Editar">${pencilIcon}</button>
               <button class="hist-btn done-btn ${status==='done'?'active':''}" data-id="${h.id}" data-action="done" aria-label="Marcar completado">${checkIcon}</button>
               <button class="hist-btn reject-btn ${status==='rejected'?'active':''}" data-id="${h.id}" data-action="rejected" aria-label="Marcar rechazado">${xIcon}</button>
@@ -2109,7 +2109,7 @@ function initApp() {
         e.stopPropagation();
         const id = parseFloat(btn.dataset.id);
         const current = state.history.find(h => h.id === id);
-        if(!current || current.status !== 'done') return;
+        if(!current) return;
         openReceiptWindow(current).catch((err) => {
           console.error(err);
           alert('No se pudo generar el recibo.');
