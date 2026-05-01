@@ -755,7 +755,7 @@
     <div class="receipt-actions">
       <button class="receipt-action-btn" id="receiptDownloadBtn">Descargar PNG</button>
       <button class="receipt-action-btn" id="receiptPrintBtn">Descargar PDF</button>
-      <button class="receipt-action-btn" id="receiptCopyBtn">Copiar imagen</button>
+      <button class="receipt-action-btn" id="receiptCopyBtn">Copiar / compartir</button>
       <button class="receipt-action-btn receipt-close-btn" id="receiptCloseBtn">Cerrar</button>
     </div>
     <div class="receipt-preview">
@@ -1998,6 +1998,42 @@ function initApp() {
     setTimeout(()=>URL.revokeObjectURL(url), 500);
   }
 
+  function isMobileShareTarget(){
+    return window.matchMedia?.('(pointer: coarse)').matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  }
+
+  function receiptImageFile(blob){
+    if (typeof File === 'undefined') return null;
+    return new File([blob], 'recibo-the-otc-desk.png', { type: 'image/png' });
+  }
+
+  function canShareReceiptFile(file){
+    if (!file || !navigator.share) return false;
+    if (!navigator.canShare) return true;
+    try {
+      return navigator.canShare({ files: [file] });
+    } catch {
+      return false;
+    }
+  }
+
+  async function shareReceiptImage(blob){
+    const file = receiptImageFile(blob);
+    if (!canShareReceiptFile(file)) return false;
+    await navigator.share({
+      title: 'Recibo The OTC Desk',
+      text: 'Recibo The OTC Desk',
+      files: [file]
+    });
+    return true;
+  }
+
+  async function copyReceiptImage(blob){
+    if (!navigator.clipboard || !window.ClipboardItem) return false;
+    await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+    return true;
+  }
+
   async function openReceiptWindow(h){
     const model = getReceiptModel(h);
     currentReceiptSvg = '';
@@ -2248,14 +2284,27 @@ function initApp() {
     if(!currentReceiptCanvas) return;
     try {
       const blob = await canvasToBlob(currentReceiptCanvas, 'image/png');
-      if (navigator.clipboard && window.ClipboardItem) {
-        await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+      if (isMobileShareTarget() && await shareReceiptImage(blob)) {
+        showToast('Imagen lista para compartir');
+      } else if (await copyReceiptImage(blob)) {
         showToast('Imagen copiada');
       } else {
-        showToast('Usa Descargar PNG');
+        downloadBlob(blob, 'recibo-the-otc-desk.png');
+        showToast('PNG descargado');
       }
-    } catch {
-      showToast('No se pudo copiar');
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+      try {
+        const blob = await canvasToBlob(currentReceiptCanvas, 'image/png');
+        if (await shareReceiptImage(blob)) {
+          showToast('Imagen lista para compartir');
+        } else {
+          downloadBlob(blob, 'recibo-the-otc-desk.png');
+          showToast('PNG descargado');
+        }
+      } catch {
+        showToast('No se pudo preparar la imagen');
+      }
     }
   });
   document.getElementById('receiptPrintBtn').addEventListener('click', ()=>{
