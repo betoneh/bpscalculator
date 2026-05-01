@@ -3,13 +3,7 @@
   "cleanUrls": true,
   "functions": {
     "server.js": {
-      "includeFiles": [
-        "index.html",
-        "settings.html",
-        "api-provider-settings.html",
-        "receipt-lab.html",
-        "assets/**"
-      ]
+      "includeFiles": "{*.html,assets/**}"
     }
   },
   "rewrites": [
