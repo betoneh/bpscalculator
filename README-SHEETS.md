@@ -50,30 +50,34 @@ La BPS Calculator puede sincronizar cada log de cotización a un Google Sheet. E
    ```
    **Cópiala.**
 
-### Paso 5: Pegarla en la app
+### Paso 5: Configurar la variable de entorno
 
-1. Abre `index.html` en tu editor.
-2. Busca la línea:
-   ```js
-   const SHEETS_WEBHOOK_URL = '';
-   ```
-3. Pega tu URL entre las comillas:
-   ```js
-   const SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbx.../exec';
-   ```
-4. Guarda y haz push al repo.
+La URL del Web App no se pega en `index.html`. Debe vivir en el servidor para no exponerla en el navegador.
+
+En local, agrega esto a `.env`:
+
+```bash
+SHEETS_WEBHOOK_URL=https://script.google.com/macros/s/AKfycbx.../exec
+```
+
+En Vercel, agrega la misma variable en producción:
+
+```bash
+vercel env add SHEETS_WEBHOOK_URL production
+```
 
 ## Probar que funciona
 
 1. Abre la app en el navegador (en local o producción).
-2. Crea una cotización y toca "Guardar" o el botón de WhatsApp.
+2. Crea una cotización y toca "Guardar" o el botón de copiar.
 3. Abre tu Google Sheet — debería aparecer una fila nueva en segundos.
 4. Cambia el estado del log a "Completado" — la fila del sheet debería actualizarse.
 
 ## Troubleshooting
 
 **No aparece nada en el sheet**
-- Abre las DevTools del navegador (F12) y revisa la consola. Si ves `[Sheets sync] fallo silencioso`, la URL está mal o el deployment expiró.
+- Abre las DevTools del navegador (F12) y revisa la consola. Si ves `[Sheets sync] no configurado o falló: 503`, falta `SHEETS_WEBHOOK_URL` en el servidor o en Vercel.
+- Si ves `[Sheets sync] fallo silencioso`, la app no pudo llegar al endpoint interno `/api/sheets/log`.
 - Verifica que la URL termine en `/exec` y no en `/dev`.
 - Revisa en Apps Script → **Executions** (menú izquierdo) si hay errores en el script.
 

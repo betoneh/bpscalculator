@@ -702,24 +702,28 @@ function initApp() {
 
   // ══════════════════════════════════════════════════════════
   // GOOGLE SHEETS SYNC
-  // Pega aquí la URL del Web App de tu Apps Script (ver README-SHEETS.md).
-  // Déjala vacía ('') para desactivar la sincronización.
+  // El webhook real vive en el servidor como SHEETS_WEBHOOK_URL para no
+  // exponer la URL de Apps Script en el navegador.
   // ══════════════════════════════════════════════════════════
-  const SHEETS_WEBHOOK_URL = '';
+  const SHEETS_SYNC_URL = '/api/sheets/log';
 
   // Debounce para updates (evita saturar el webhook con cada tecla del nombre)
   const updateDebounces = new Map();
   function syncToSheets(action, payload){
-    if (!SHEETS_WEBHOOK_URL) return;
     const body = JSON.stringify({ action, ...payload });
-    // fire-and-forget con no-cors: Apps Script no manda headers CORS,
-    // con no-cors no podemos leer la respuesta pero la request sí llega.
-    fetch(SHEETS_WEBHOOK_URL, {
+    fetch(SHEETS_SYNC_URL, {
       method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' }, // text/plain evita preflight
-      body: body
-    }).catch(e => console.warn('[Sheets sync] fallo silencioso:', e));
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body,
+      keepalive: body.length < 60000
+    })
+      .then((response) => {
+        if (!response.ok) console.warn('[Sheets sync] no configurado o falló:', response.status);
+      })
+      .catch(e => console.warn('[Sheets sync] fallo silencioso:', e));
   }
 
   function logToSheetsRow(h){

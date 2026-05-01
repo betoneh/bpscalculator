@@ -12,6 +12,8 @@ const HOST = process.env.HOST || '127.0.0.1';
 const CAPA_API_KEY = process.env.CAPA_API_KEY || '';
 const CAPA_BASE_URL = process.env.CAPA_BASE_URL || 'https://staging-api.capa.fi';
 const BANXICO_TOKEN = process.env.BANXICO_TOKEN || '';
+const SHEETS_WEBHOOK_URL = process.env.SHEETS_WEBHOOK_URL || '';
+const MAX_BODY_BYTES = 64 * 1024;
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -33,6 +35,9 @@ const server = http.createServer(async (req, res) => {
     }
     if (req.method === 'GET' && url.pathname === '/api/banxico/fix') {
       return handleBanxicoFix(res);
+    }
+    if (req.method === 'POST' && url.pathname === '/api/sheets/log') {
+      return handleSheetsLog(req, res);
     }
 
     if (req.method !== 'GET' && req.method !== 'HEAD') {
@@ -246,6 +251,94 @@ async function handleBanxicoFix(res) {
   }
 }
 
+async function handleSheetsLog(req, res) {
+  if (!SHEETS_WEBHOOK_URL) {
+    return sendJson(res, 503, {
+      success: false,
+      error: 'SHEETS_WEBHOOK_URL is not configured',
+      errorCode: 'SHEETS_WEBHOOK_URL_MISSING'
+    });
+  }
+
+  let payload;
+  try {
+    payload = await readJsonBody(req);
+  } catch (error) {
+    return sendJson(res, error.statusCode || 400, {
+      success: false,
+      error: error.message || 'Invalid request body',
+      errorCode: error.errorCode || 'INVALID_BODY'
+    });
+  }
+
+  const action = payload?.action;
+  if (action !== 'create' && action !== 'update') {
+    return sendJson(res, 400, {
+      success: false,
+      error: 'action must be create or update',
+      errorCode: 'INVALID_ACTION'
+    });
+  }
+
+  if (!payload.id) {
+    return sendJson(res, 400, {
+      success: false,
+      error: 'id is required',
+      errorCode: 'ID_REQUIRED'
+    });
+  }
+
+  const safePayload = {
+    action,
+    id: String(payload.id),
+    fecha: String(payload.fecha || ''),
+    hora: String(payload.hora || ''),
+    cliente: String(payload.cliente || ''),
+    direccion: String(payload.direccion || ''),
+    recibimos: String(payload.recibimos || ''),
+    enviamos: String(payload.enviamos || ''),
+    tc: String(payload.tc || ''),
+    bps: String(payload.bps || ''),
+    estado: String(payload.estado || 'Pendiente')
+  };
+
+  try {
+    const upstreamResponse = await fetch(SHEETS_WEBHOOK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        Accept: 'application/json'
+      },
+      body: JSON.stringify(safePayload)
+    });
+
+    const text = await upstreamResponse.text();
+    let upstream = null;
+    try {
+      upstream = text ? JSON.parse(text) : null;
+    } catch (error) {
+      upstream = { raw: text };
+    }
+
+    if (!upstreamResponse.ok || upstream?.ok === false) {
+      return sendJson(res, 502, {
+        success: false,
+        error: upstream?.error || 'Google Sheets webhook failed',
+        errorCode: 'SHEETS_WEBHOOK_FAILED',
+        upstream
+      });
+    }
+
+    return sendJson(res, 200, { success: true });
+  } catch (error) {
+    return sendJson(res, 502, {
+      success: false,
+      error: 'Unable to reach Google Sheets webhook',
+      errorCode: 'SHEETS_WEBHOOK_UNREACHABLE'
+    });
+  }
+}
+
 function serveStatic(requestPath, res, method) {
   const safePath = normalizePath(requestPath);
   if (!safePath) {
@@ -309,6 +402,33 @@ function sendText(res, statusCode, text) {
     'Cache-Control': 'no-store'
   });
   res.end(text);
+}
+
+function readJsonBody(req) {
+  return new Promise((resolve, reject) => {
+    let raw = '';
+    req.on('data', (chunk) => {
+      raw += chunk;
+      if (Buffer.byteLength(raw, 'utf8') > MAX_BODY_BYTES) {
+        const error = new Error('Request body too large');
+        error.statusCode = 413;
+        error.errorCode = 'BODY_TOO_LARGE';
+        reject(error);
+        req.destroy();
+      }
+    });
+    req.on('end', () => {
+      try {
+        resolve(raw ? JSON.parse(raw) : {});
+      } catch (error) {
+        error.statusCode = 400;
+        error.errorCode = 'INVALID_JSON';
+        error.message = 'Invalid JSON body';
+        reject(error);
+      }
+    });
+    req.on('error', reject);
+  });
 }
 
 function loadEnvFile(filePath) {
