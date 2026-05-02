@@ -1686,9 +1686,9 @@ function initApp() {
     const canvasWidth = 1080;
     const canvasHeight = 1650;
     const ticketWidth = 780;
-    const ticketHeight = 1160;
+    const ticketHeight = 1140;
     const ticketX = (canvasWidth - ticketWidth) / 2;
-    const ticketY = 195;
+    const ticketY = 185;
     const scaleOriginX = canvasWidth / 2;
     const scaleOriginY = ticketY + ticketHeight / 2;
     const contentX = ticketX + 64;
@@ -1727,14 +1727,16 @@ function initApp() {
     const clientLines = wrapRight(model.clientName, 26);
     const zigzagCount = 18;
     const zigzagStep = ticketWidth / zigzagCount;
-    const zigzagDepth = 22;
+    const zigzagDepth = 0;
     const zigzagOverlap = 2;
-    const zigzagPoints = Array.from({ length: zigzagCount }, (_, i) => {
-      const startX = ticketX + i * zigzagStep;
-      const midX = startX + zigzagStep / 2;
-      const endX = startX + zigzagStep;
-      return `${startX},${ticketY + ticketHeight - zigzagOverlap} ${midX},${ticketY + ticketHeight + zigzagDepth} ${endX},${ticketY + ticketHeight - zigzagOverlap}`;
-    }).join(' ');
+    const zigzagPoints = zigzagDepth > 0
+      ? Array.from({ length: zigzagCount }, (_, i) => {
+          const startX = ticketX + i * zigzagStep;
+          const midX = startX + zigzagStep / 2;
+          const endX = startX + zigzagStep;
+          return `${startX},${ticketY + ticketHeight - zigzagOverlap} ${midX},${ticketY + ticketHeight + zigzagDepth} ${endX},${ticketY + ticketHeight - zigzagOverlap}`;
+        }).join(' ')
+      : '';
     const logoWidth = 304;
     const logoHeight = logoWidth * (140 / 888);
     const logoX = (canvasWidth - logoWidth) / 2;
@@ -1767,7 +1769,7 @@ function initApp() {
   <rect width="${canvasWidth}" height="${canvasHeight}" fill="${receiptBg}"/>
   <g transform="translate(${scaleOriginX} ${scaleOriginY}) scale(${receiptScale}) translate(${-scaleOriginX} ${-scaleOriginY})">
   <rect x="${ticketX}" y="${ticketY}" width="${ticketWidth}" height="${ticketHeight}" fill="${paper}"/>
-  <polygon points="${zigzagPoints}" fill="${paper}"/>
+  ${zigzagPoints ? `<polygon points="${zigzagPoints}" fill="${paper}"/>` : ''}
   <image href="${logoHref}" xlink:href="${logoHref}" x="${logoX}" y="${ticketY + 130}" width="${logoWidth}" height="${logoHeight}" preserveAspectRatio="xMidYMid meet"/>
   <text x="${canvasWidth/2}" y="${dateY}" text-anchor="middle" fill="${muted}" font-size="19" font-family="${mono}" font-weight="400">${escape(model.timestamp || '')}</text>
   <text x="${canvasWidth/2}" y="${titleY}" text-anchor="middle" fill="${ink}" font-size="38" font-family="${sans}" font-weight="700" letter-spacing="0.8">${escape(model.title)}</text>
@@ -1803,9 +1805,9 @@ function initApp() {
     const canvasWidth = 1080;
     const canvasHeight = 1650;
     const ticketWidth = 780;
-    const ticketHeight = 1160;
+    const ticketHeight = 1140;
     const ticketX = (canvasWidth - ticketWidth) / 2;
-    const ticketY = 195;
+    const ticketY = 185;
     const scaleOriginX = canvasWidth / 2;
     const scaleOriginY = ticketY + ticketHeight / 2;
     const contentX = ticketX + 64;
@@ -1896,17 +1898,19 @@ function initApp() {
 
     const zigzagCount = 18;
     const zigzagStep = ticketWidth / zigzagCount;
-    const zigzagDepth = 22;
+    const zigzagDepth = 0;
     const zigzagOverlap = 2;
-    ctx.beginPath();
-    ctx.moveTo(ticketX, ticketY + ticketHeight - zigzagOverlap);
-    for (let i = 0; i < zigzagCount; i++) {
-      const startX = ticketX + i * zigzagStep;
-      ctx.lineTo(startX + zigzagStep / 2, ticketY + ticketHeight + zigzagDepth);
-      ctx.lineTo(startX + zigzagStep, ticketY + ticketHeight - zigzagOverlap);
+    if (zigzagDepth > 0) {
+      ctx.beginPath();
+      ctx.moveTo(ticketX, ticketY + ticketHeight - zigzagOverlap);
+      for (let i = 0; i < zigzagCount; i++) {
+        const startX = ticketX + i * zigzagStep;
+        ctx.lineTo(startX + zigzagStep / 2, ticketY + ticketHeight + zigzagDepth);
+        ctx.lineTo(startX + zigzagStep, ticketY + ticketHeight - zigzagOverlap);
+      }
+      ctx.closePath();
+      ctx.fill();
     }
-    ctx.closePath();
-    ctx.fill();
 
     ctx.drawImage(logo, logoX, ticketY + 130, logoWidth, logoHeight);
     text(model.timestamp || '', canvasWidth / 2, dateY, { fill: muted, size: 19, align: 'center' });
